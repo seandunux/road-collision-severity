@@ -8,15 +8,15 @@ Built as the major project for my Higher Diploma in Data Analytics.
 
 ## Features
 
-- **Risk Predictor**: choose the road and conditions to get a risk gauge against the model's tuned decision threshold, plus a SHAP waterfall chart explaining that specific prediction.
+- **Risk Predictor**: choose the road and conditions to get the probability of a serious/fatal outcome and a HIGH / LOWER RISK tag against the model's tuned decision threshold, plus a SHAP waterfall chart explaining that specific prediction.
 - **Dataset Overview**: key statistics, the class imbalance, and serious/fatal rates by the model's top predictors.
-- **SHAP Explorer**: global feature importance, and the direction of effect across the test set.
+- **SHAP Explorer**: global feature importance, and the direction of effect across the test set. The interactive charts read `app/shap_sample.pkl`, exported by the last cell of the notebook; without it the app shows the pre-rendered PNGs in `graphs/`.
 
 ![SHAP feature importance](graphs/shap_feature_importance.png)
 
 ## Tech stack
 
-Python · XGBoost · scikit-learn · SHAP · pandas · Plotly · Matplotlib · Streamlit
+Python · XGBoost · scikit-learn · SHAP · pandas · Plotly · Streamlit
 
 ## Data
 

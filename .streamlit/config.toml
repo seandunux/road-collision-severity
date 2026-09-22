@@ -1,0 +1,10 @@
+[theme]
+base = "dark"
+primaryColor = "#9184d9"
+backgroundColor = "#161826"
+secondaryBackgroundColor = "#232532"
+textColor = "#e9e9ed"
+borderColor = "#3f424d"
+baseRadius = "8px"
+font = "Inter, sans-serif"
+headingFontWeights = 500
