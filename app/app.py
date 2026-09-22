@@ -13,6 +13,10 @@ import pandas as pd # data manipulation
 import plotly.graph_objects as go # creates the charts
 import shap # explains the model predictions
 import matplotlib.pyplot as plt # creates the charts
+from pathlib import Path # builds file paths that work from any folder
+
+# folder containing this script, so files load no matter where the app is launched from
+BASE_DIR = Path(__file__).resolve().parent
 
 # streamlit page configuration
 st.set_page_config(page_title="UK Road Collision Severity Predictor", layout="centered") 
@@ -24,16 +28,19 @@ st.title("Road Collision Severity Predictor")
 # Stage 2: Loading the trained model
 # -------------------------------------
 
-# load the trained model bundel from the pickle file
-with open("final_model.pkl", "rb") as file:
-    save_model_data = pickle.load(file)
+# load the trained model bundle and build the SHAP explainer once, then reuse them across reruns
+@st.cache_resource
+def load_model():
+    with open(BASE_DIR / "final_model.pkl", "rb") as file:
+        save_model_data = pickle.load(file)
+    explainer = shap.TreeExplainer(save_model_data["model"])
+    return save_model_data, explainer
+
+save_model_data, explainer = load_model()
 
 model = save_model_data["model"]
 threshold = save_model_data["threshold"]
 feature_names = save_model_data["feature_names"]
-
-# build the SHAP explainer
-explainer = shap.TreeExplainer(model)
 
 # ADDED IN STAGE 8: Readable names for the model's raw column names, used on the SHAP waterfall chart
 FEATURE_LABELS = {
@@ -327,20 +334,26 @@ with tab_overview:
     # Stage 9a: Summary statistics
     # ------------------------------------------------
 
-    # load the dataset and select only the needed columns
-    columns_needed = ["collision_severity", "road_type", "speed_limit", "urban_or_rural_area", "collision_year"]
+    # load the dataset once and reuse it across reruns
+    @st.cache_data
+    def load_dataset():
+        # slim copy of the full dataset containing only the needed columns
+        columns_needed = ["collision_severity", "road_type", "speed_limit", "urban_or_rural_area", "collision_year"]
 
-    # read the dataset into a DataFrame
-    df = pd.read_csv("../data/dataset.csv", usecols=columns_needed)
+        # read the dataset into a DataFrame
+        df = pd.read_csv(BASE_DIR.parent / "data" / "dataset_slim.csv", usecols=columns_needed)
 
-    # Build a simple 0/1 target column: 1 = Serious or Fatal, 0 = Slight
-    target_values = []
-    for severity in df["collision_severity"]:
-        if severity == 1 or severity == 2:
-            target_values.append(1)
-        else:
-            target_values.append(0)
-    df["target"] = target_values
+        # Build a simple 0/1 target column: 1 = Serious or Fatal, 0 = Slight
+        target_values = []
+        for severity in df["collision_severity"]:
+            if severity == 1 or severity == 2:
+                target_values.append(1)
+            else:
+                target_values.append(0)
+        df["target"] = target_values
+        return df
+
+    df = load_dataset()
 
     # create a header and information about the dataset
     st.header("About the Dataset")
@@ -424,7 +437,7 @@ with tab_shap:
 
     # display the SHAP feature importance chart
     st.subheader("Feature Importance")
-    st.image("../graphs/shap_feature_importance.png")
+    st.image(str(BASE_DIR.parent / "graphs" / "shap_feature_importance.png"))
     st.caption(
         "Average magnitude of each feature's effect on the model's output, "
         "across a 5,000-row sample of the test set. Road Type, Speed Limit, and "
@@ -433,7 +446,7 @@ with tab_shap:
 
     # display the SHAP dot plot chart
     st.subheader("Direction of Effect")
-    st.image("../graphs/shap_dot_plot.png")
+    st.image(str(BASE_DIR.parent / "graphs" / "shap_dot_plot.png"))
     st.caption(
         "Each dot is one collision. Red = high value for that feature, blue = low. "
         "Position right of centre pushes the prediction toward Serious/Fatal; left "
