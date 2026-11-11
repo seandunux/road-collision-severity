@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoadCast — Components and rationale</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="roadcast/roadcast.css">
+<style>
+.sys{width:1440px;background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(22,24,29,.06),0 8px 28px rgba(22,24,29,.08);padding:56px 80px 80px}
+.sys-sec{display:grid;grid-template-columns:280px minmax(0,1fr);gap:56px;padding:36px 0;border-top:1px solid #E1E5EA}
+.sys-sec:first-of-type{border-top:0}
+.sys-k{display:flex;flex-direction:column;gap:6px}
+.sys-demo{display:flex;flex-wrap:wrap;gap:28px 36px;align-items:flex-start}
+.sys-cell{display:flex;flex-direction:column;gap:10px;min-width:0}
+.sys-cap{font-size:13px;line-height:18px;color:#4F5663}
+.sw{display:flex;flex-direction:column;gap:6px;width:150px}
+.sw-c{height:56px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(22,24,29,.08)}
+.sw-n{font-size:14px;line-height:20px;font-weight:600}
+.sw-v{font:13px/18px ui-monospace,Menlo,monospace;color:#4F5663}
+.rat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 56px}
+.rat h3{margin-bottom:6px}
+.rat p{color:#4F5663}
+.rat ul{margin:8px 0 0;padding-left:18px;color:#4F5663}
+.rat li{margin:4px 0}
+</style>
+</helmet>
+
+<div class="cv">
+
+<section class="cv-sec">
+  <h2 class="cv-sec-h"><span class="cv-id">S</span>Component system</h2>
+  <p class="cv-sec-p">Every component used on the Predict, Data and Model insights screens, with its states. Tokens live in roadcast/roadcast.css; contrast ratios are measured against the surface each colour sits on.</p>
+  <div class="sys rc">
+
+    <!-- tokens -->
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Colour</h2><p class="sm t2">Neutral, cool-toned greys with one blue accent. Colour never carries meaning alone: every coloured mark has a shape, line style or label too.</p></div>
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div class="sys-demo">
+          <div class="sw"><div class="sw-c" style="background:#FFFFFF"></div><span class="sw-n">Page</span><span class="sw-v">#FFFFFF</span></div>
+          <div class="sw"><div class="sw-c" style="background:#F7F8FA"></div><span class="sw-n">Secondary</span><span class="sw-v">#F7F8FA</span></div>
+          <div class="sw"><div class="sw-c" style="background:#E1E5EA"></div><span class="sw-n">Border</span><span class="sw-v">#E1E5EA · dividers</span></div>
+          <div class="sw"><div class="sw-c" style="background:#C8CED7"></div><span class="sw-n">Strong border</span><span class="sw-v">#C8CED7 · decorative</span></div>
+          <div class="sw"><div class="sw-c" style="background:#8A919D"></div><span class="sw-n">Control edge</span><span class="sw-v">#8A919D · 3.2:1</span></div>
+        </div>
+        <div class="sys-demo">
+          <div class="sw"><div class="sw-c" style="background:#16181D"></div><span class="sw-n">Primary text</span><span class="sw-v">#16181D · 17.8:1</span></div>
+          <div class="sw"><div class="sw-c" style="background:#4F5663"></div><span class="sw-n">Secondary text</span><span class="sw-v">#4F5663 · 7.4:1</span></div>
+          <div class="sw"><div class="sw-c" style="background:#687080"></div><span class="sw-n">Muted text</span><span class="sw-v">#687080 · 5.0:1</span></div>
+          <div class="sw"><div class="sw-c" style="background:#3A55D0"></div><span class="sw-n">Accent · positive</span><span class="sw-v">#3A55D0 · 6.2:1</span></div>
+          <div class="sw"><div class="sw-c" style="background:#7A818D"></div><span class="sw-n">Negative influence</span><span class="sw-v">#7A818D · 3.9:1</span></div>
+        </div>
+        <div class="sys-demo">
+          <div class="sw"><div class="sw-c" style="background:#EEF1FC;display:grid;place-items:center;color:#2C43AE;font-weight:600">Aa</div><span class="sw-n">Accent weak</span><span class="sw-v">#EEF1FC / #2C43AE 7.4:1</span></div>
+          <div class="sw"><div class="sw-c" style="background:#FFF6E5;display:grid;place-items:center;color:#7A4600;font-weight:600">Aa</div><span class="sw-n">Warning</span><span class="sw-v">#FFF6E5 / #7A4600 7.2:1</span></div>
+          <div class="sw"><div class="sw-c" style="background:#FEF3F2;display:grid;place-items:center;color:#B42318;font-weight:600">Aa</div><span class="sw-n">Error</span><span class="sw-v">#FEF3F2 / #B42318 6.1:1</span></div>
+          <div class="sw"><div class="sw-c rc-hatch"></div><span class="sw-n">Not recorded</span><span class="sw-v">hatch + #8A919D edge</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Type</h2><p class="sm t2">Inter throughout, tabular figures for every number. Nothing below 13px.</p></div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:grid;grid-template-columns:180px 1fr;align-items:baseline;gap:20px"><span class="sys-cap">Probability · 72 / 600</span><span class="rc-big">34.8%</span></div>
+        <div style="display:grid;grid-template-columns:180px 1fr;align-items:baseline;gap:20px"><span class="sys-cap">Statistic · 32 / 600</span><span class="rc-stat-v">503,475</span></div>
+        <div style="display:grid;grid-template-columns:180px 1fr;align-items:baseline;gap:20px"><span class="sys-cap">Page title · 30 / 600</span><h1>Understand the data</h1></div>
+        <div style="display:grid;grid-template-columns:180px 1fr;align-items:baseline;gap:20px"><span class="sys-cap">Section · 21 / 600</span><h2>What influenced this estimate</h2></div>
+        <div style="display:grid;grid-template-columns:180px 1fr;align-items:baseline;gap:20px"><span class="sys-cap">Takeaway · 17 / 400</span><p class="rc-takeaway">Single carriageways have the highest recorded rate.</p></div>
+        <div style="display:grid;grid-template-columns:180px 1fr;align-items:baseline;gap:20px"><span class="sys-cap">Body · 15 / 400 · lh 24</span><p>Configure the recorded road, environmental, and time conditions.</p></div>
+        <div style="display:grid;grid-template-columns:180px 1fr;align-items:baseline;gap:20px"><span class="sys-cap">Label · 14 / 500</span><span class="rc-label">Junction control</span></div>
+        <div style="display:grid;grid-template-columns:180px 1fr;align-items:baseline;gap:20px"><span class="sys-cap">Group heading · 13 / 600 caps</span><span class="rc-group-h">Environment</span></div>
+        <div style="display:grid;grid-template-columns:180px 1fr;align-items:baseline;gap:20px"><span class="sys-cap">Caption · 13 / 400</span><span class="xs mut">Based on police-reported STATS19 collisions from Great Britain, 2020–2024.</span></div>
+      </div>
+    </div>
+
+    <!-- navigation -->
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Navigation</h2><p class="sm t2">Active tab: heavier weight, near-black text and a 2px underline, plus aria-current. Maps to st.tabs with injected CSS.</p></div>
+      <div class="sys-demo" style="flex-direction:column;gap:20px">
+        <nav class="rc-nav" aria-label="Example" style="margin:0;border-bottom:1px solid #E1E5EA;width:520px"><a class="rc-tab" href="#" aria-current="page">Predict</a><a class="rc-tab" href="#" style="color:#16181D">Data</a><a class="rc-tab" href="#" style="box-shadow:var(--rc-focus);border-radius:4px;padding:0 4px">Model insights</a></nav>
+        <div class="sys-cap">Active · hover · keyboard focus</div>
+        <nav class="rc-m-nav" aria-label="Example mobile" style="width:358px;border-bottom:1px solid #E1E5EA"><a class="rc-tab" href="#">Predict</a><a class="rc-tab" href="#" aria-current="page">Data</a><a class="rc-tab" href="#">Insights</a></nav>
+        <div class="sys-cap">Mobile: three equal tabs, 44px tall; “Model insights” shortens to “Insights”</div>
+      </div>
+    </div>
+
+    <!-- buttons -->
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Buttons</h2><p class="sm t2">One primary action per view. 44px minimum; 36px only for inline actions inside a banner.</p></div>
+      <div class="sys-demo">
+        <div class="sys-cell"><button class="rc-btn rc-btn-primary" type="button">Calculate estimate</button><span class="sys-cap">Primary</span></div>
+        <div class="sys-cell"><button class="rc-btn rc-btn-primary" type="button" style="background:#2E45B0">Calculate estimate</button><span class="sys-cap">Hover</span></div>
+        <div class="sys-cell"><button class="rc-btn rc-btn-primary" type="button" style="box-shadow:var(--rc-focus)">Calculate estimate</button><span class="sys-cap">Focus</span></div>
+        <div class="sys-cell"><button class="rc-btn rc-btn-primary" type="button" disabled><span class="rc-spin"></span>Calculating…</button><span class="sys-cap">Busy</span></div>
+        <div class="sys-cell"><button class="rc-btn rc-btn-secondary" type="button">Reset scenario</button><span class="sys-cap">Secondary</span></div>
+        <div class="sys-cell"><button class="rc-btn rc-btn-ghost" type="button">About the model</button><span class="sys-cap">Quiet</span></div>
+        <div class="sys-cell"><button class="rc-link-btn" type="button">About the data</button><span class="sys-cap">Text link</span></div>
+      </div>
+    </div>
+
+    <!-- form controls -->
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Form controls</h2><p class="sm t2">“Information unavailable” is never just another option: it sits below a divider in the menu, and once chosen the field turns dashed and grey with an Unrecorded badge and a hint.</p></div>
+      <div class="sys-demo">
+        <div class="sys-cell" style="width:232px"><div class="rc-field"><label class="rc-label" for="s1">Lighting</label><button class="rc-select" id="s1" type="button"><span>Daylight</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#4F5663" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button></div><span class="sys-cap">Default</span></div>
+        <div class="sys-cell" style="width:232px"><div class="rc-field"><label class="rc-label" for="s2">Lighting</label><button class="rc-select is-focus" id="s2" type="button"><span>Daylight</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#4F5663" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button></div><span class="sys-cap">Focus</span></div>
+        <div class="sys-cell" style="width:232px"><div class="rc-field"><div class="rc-label"><label for="s3">Speed limit</label><span style="flex:1"></span><span class="rc-badge rc-badge-acc">Changed</span></div><button class="rc-select is-changed" id="s3" type="button"><span>40 mph</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#4F5663" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button></div><span class="sys-cap">Changed since last estimate</span></div>
+        <div class="sys-cell" style="width:232px"><div class="rc-field"><div class="rc-label"><label for="s4">Weather</label><span style="flex:1"></span><span class="rc-badge rc-badge-neu">Unrecorded</span></div><button class="rc-select is-unrec" id="s4" type="button"><span>Information unavailable</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#4F5663" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><p class="rc-hint">Not recorded. May lower the estimate for reasons unrelated to the actual conditions.</p></div><span class="sys-cap">Unrecorded</span></div>
+        <div class="sys-cell" style="width:260px">
+          <div class="rc-field"><label class="rc-label" for="s5">Weather</label><button class="rc-select is-focus" id="s5" type="button" aria-expanded="true"><span>Raining</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#4F5663" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg)" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button></div>
+          <div class="rc-menu" role="listbox" aria-label="Weather">
+            <button class="rc-opt" type="button" role="option">Fine</button>
+            <button class="rc-opt is-sel" type="button" role="option" aria-selected="true">Raining<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#3A55D0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
+            <button class="rc-opt" type="button" role="option">Snowing</button>
+            <button class="rc-opt" type="button" role="option">Fog or mist</button>
+            <button class="rc-opt" type="button" role="option">High winds</button>
+            <button class="rc-opt" type="button" role="option">Other</button>
+            <div class="rc-opt-sep"></div>
+            <p class="rc-opt-cap">Not a weather condition</p>
+            <button class="rc-opt rc-opt-unrec" type="button" role="option">Information unavailable</button>
+          </div>
+          <span class="sys-cap">Open menu: unrecorded value separated</span>
+        </div>
+        <div class="sys-cell" style="width:300px"><div class="rc-field"><label class="rc-label" for="s6">Time of day</label><div class="rc-slider"><div class="rc-slider-track"></div><div class="rc-slider-fill" style="width:73.9%"></div><div class="rc-slider-thumb" style="left:73.9%"></div><input id="s6" type="range" min="0" max="23" value="17" aria-valuetext="17:00" style="position:absolute;inset:0;width:100%;opacity:0;margin:0"></div><div class="rc-slider-ends"><span>00:00</span><span class="rc-slider-val">17:00</span><span>23:00</span></div></div><span class="sys-cap">Slider: value shown as 17:00, centred under the track</span></div>
+      </div>
+    </div>
+
+    <!-- tooltip + disclosure -->
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Tooltips and disclosures</h2><p class="sm t2">Help tooltips carry one or two sentences, open on hover and focus, and close on Escape. Anything longer goes in a disclosure.</p></div>
+      <div class="sys-demo">
+        <div class="sys-cell" style="width:300px">
+          <div class="rc-label">Junction control<button class="rc-help-btn" type="button" aria-label="About junction control" aria-describedby="tip1" style="box-shadow:var(--rc-focus)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.4 6.3a1.7 1.7 0 1 1 2.3 1.6c-.45.2-.7.55-.7 1.05v.25" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".55" fill="currentColor" stroke="none"/></svg></button></div>
+          <div class="rc-tip" id="tip1" role="tooltip" style="margin-left:110px">“Not at a junction” is the most common category. “Information unavailable” means the control type wasn’t recorded: a reporting gap, not a safer junction.</div>
+          <span class="sys-cap">Tooltip, opened by keyboard focus</span>
+        </div>
+        <div class="sys-cell" style="width:440px">
+          <div class="rc-disc"><button class="rc-disc-btn" type="button" aria-expanded="false"><span style="display:flex;flex-direction:column;gap:3px">More road details<small>A road · Trunk road unrecorded · No special conditions · No crossing nearby</small></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button></div>
+          <span class="sys-cap">Collapsed: the summary line shows current values, so nothing is hidden</span>
+          <div class="rc-disc" style="margin-top:10px">
+            <button class="rc-disc-btn" type="button" aria-expanded="true">Values the model assumes<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg)" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+            <div class="rc-disc-body">
+              <p class="sm t2">The model has more inputs than this form shows. These keep the most common recorded value.</p>
+              <dl class="sm" style="margin:0;display:grid;grid-template-columns:150px 1fr;gap:6px 12px"><dt class="t2">Junction layout</dt><dd style="margin:0">Not at a junction</dd><dt class="t2">Second road</dt><dd style="margin:0">Not applicable</dd><dt class="t2">Carriageway hazards</dt><dd style="margin:0">None</dd></dl>
+            </div>
+          </div>
+          <span class="sys-cap">Expanded</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- statistics + status -->
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Statistics and threshold status</h2><p class="sm t2">Statistics sit in a ruled row, not boxed cards. Status chips pair a filled or hollow triangle with words, so they read in greyscale.</p></div>
+      <div style="display:flex;flex-direction:column;gap:28px">
+        <div class="rc-stats" style="width:760px"><div class="rc-stat"><span class="rc-stat-v">503,475</span><span class="rc-stat-k">Raw collision records</span></div><div class="rc-stat"><span class="rc-stat-v">23.3%</span><span class="rc-stat-k">Serious or fatal</span></div><div class="rc-stat"><span class="rc-stat-v">2020–2024</span><span class="rc-stat-k">Coverage</span></div></div>
+        <div class="sys-demo">
+          <div class="sys-cell"><span class="rc-status rc-status-above"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5l5 8.5H1z" fill="currentColor"/></svg>Above alert threshold</span><span class="sys-cap">Above</span></div>
+          <div class="sys-cell"><span class="rc-status rc-status-below"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10.5L1.6 2.5h8.8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Below alert threshold</span><span class="sys-cap">Below</span></div>
+          <div class="sys-cell"><span class="rc-badge rc-badge-neu" style="height:32px;padding:0 12px;font-size:14px">Outdated</span><span class="sys-cap">Outdated (paired with a banner)</span></div>
+          <div class="sys-cell"><div class="rc-cmp" style="width:420px"><div><span class="rc-cmp-k"><span class="rc-glyph-solid"></span>Alert threshold</span><span class="rc-cmp-v">22.5%</span><span class="rc-cmp-d">0.4 points above</span></div><div><span class="rc-cmp-k"><span class="rc-glyph-dash"></span>Dataset baseline</span><span class="rc-cmp-v">23.3%</span><span class="rc-cmp-d">0.4 points below</span></div></div><span class="sys-cap">Comparison pair, edge case: above the threshold but below the baseline</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- comparison scale -->
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Comparison scale</h2><p class="sm t2">Three different marks, so it reads without colour: a filled dot (estimate), a solid line (threshold) and a dashed line (baseline). Threshold labels hang left of their line and baseline labels right, so the two never collide.</p></div>
+      <div style="display:flex;flex-direction:column;gap:36px;max-width:680px">
+        <sc-for list="{{ scales }}" as="s" hint-placeholder-count="3">
+          <div class="sys-cell">
+            <figure style="margin:0" role="img" aria-label="{{ s.alt }}">
+              <div class="rc-scale">
+                <div class="rc-scale-est" style="left:{{ s.pct }}">This estimate {{ s.est }}</div>
+                <div class="rc-scale-track"><div class="rc-scale-fill" style="width:{{ s.pct }}"></div><div class="rc-scale-thr" style="left:37.5%"></div><div class="rc-scale-base" style="left:38.83%"></div><div class="rc-scale-dot" style="left:{{ s.pct }}"></div></div>
+              </div>
+              <div class="rc-scale-labels"><div class="rc-scale-lt" style="left:37.5%"><b>22.5%</b>Alert threshold</div><div class="rc-scale-lb" style="left:38.83%"><b>23.3%</b>Dataset baseline</div></div>
+              <div class="rc-scale-ticks" aria-hidden="true"><span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span><span>60%</span></div>
+            </figure>
+            <span class="sys-cap">{{ s.cap }}</span>
+          </div>
+        </sc-for>
+        <div style="display:flex;gap:20px" class="xs t2"><span style="display:flex;align-items:center;gap:6px"><span class="rc-glyph-dot"></span>Estimate</span><span style="display:flex;align-items:center;gap:6px"><span class="rc-glyph-solid"></span>Alert threshold</span><span style="display:flex;align-items:center;gap:6px"><span class="rc-glyph-dash"></span>Dataset baseline</span></div>
+      </div>
+    </div>
+
+    <!-- explanation rows -->
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Explanation rows</h2><p class="sm t2">Readable feature name, the value used, and strength as both a bar and a word. Direction comes from the column heading and arrow, not from colour.</p></div>
+      <div class="rc-xcols" style="max-width:780px">
+        <div>
+          <h3 class="rc-xh"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#3A55D0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4"/></svg>Factors increasing this estimate</h3>
+          <div class="rc-xrow"><div><div class="rc-xname">Speed limit</div><div class="rc-xval">60 mph</div></div><div class="rc-xbar"><div class="rc-xbar-t"><div class="rc-xbar-f" style="width:74%;background:#3A55D0"></div></div><span class="rc-xbar-l">Strong</span></div></div>
+          <div class="rc-xrow"><div><div class="rc-xname">Lighting</div><div class="rc-xval">Dark – no street lighting</div></div><div class="rc-xbar"><div class="rc-xbar-t"><div class="rc-xbar-f" style="width:21%;background:#3A55D0"></div></div><span class="rc-xbar-l">Moderate</span></div></div>
+        </div>
+        <div>
+          <h3 class="rc-xh"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#4F5663" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>Factors reducing this estimate</h3>
+          <div class="rc-xrow"><div><div class="rc-xname">Road type</div><div class="rc-xval">Information unavailable<span class="rc-badge rc-badge-neu">Unrecorded</span></div></div><div class="rc-xbar"><div class="rc-xbar-t"><div class="rc-xbar-f" style="width:90%;background:#7A818D"></div></div><span class="rc-xbar-l">Strong</span></div></div>
+          <div class="rc-xrow"><div><div class="rc-xname">Month</div><div class="rc-xval">November</div></div><div class="rc-xbar"><div class="rc-xbar-t"><div class="rc-xbar-f" style="width:5%;background:#7A818D"></div></div><span class="rc-xbar-l">Slight</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- charts -->
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Charts</h2><p class="sm t2">Flat bars, direct labels, no gridlines or chart borders. Grey for context, accent for the one bar the takeaway names, hatching for unrecorded categories, a dashed line for the baseline.</p></div>
+      <div style="display:flex;flex-direction:column;gap:20px;max-width:760px">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div class="rc-hbar"><span class="rc-hbar-l">Highlighted category</span><div class="rc-hbar-a"><div class="rc-ref" style="left:58.25%"></div><div class="rc-hbar-b" style="width:62.5%;background:#3A55D0"></div><span class="rc-hbar-v" style="position:relative;background:#fff;padding-right:4px">25.0% <span>· 365,844</span></span></div></div>
+          <div class="rc-hbar"><span class="rc-hbar-l">Context category</span><div class="rc-hbar-a"><div class="rc-ref" style="left:58.25%"></div><div class="rc-hbar-b" style="width:41.3%;background:#8A919D"></div><span class="rc-hbar-v" style="position:relative;background:#fff;padding-right:4px">16.5% <span>· 29,963</span></span></div></div>
+          <div class="rc-hbar"><span class="rc-hbar-l">Information unavailable</span><div class="rc-hbar-a"><div class="rc-ref" style="left:58.25%"></div><div class="rc-hbar-b rc-hatch" style="width:21.5%"></div><span class="rc-hbar-v" style="position:relative;background:#fff;padding-right:4px">8.6% <span>· 13,113</span></span></div></div>
+        </div>
+        <table class="rc-table">
+          <thead><tr><th scope="col">Element</th><th scope="col">Spec</th><th scope="col">Plotly</th></tr></thead>
+          <tbody>
+            <tr><td>Value labels</td><td>14px, 600, #16181D, outside bar end</td><td>texttemplate, textposition="outside"</td></tr>
+            <tr><td>Category labels</td><td>14px, #16181D, right-aligned</td><td>yaxis tickfont</td></tr>
+            <tr><td>Axes</td><td>No gridlines; one baseline rule #C8CED7</td><td>showgrid=False, zeroline</td></tr>
+            <tr><td>Reference</td><td>1.5px dashed #4F5663, labelled directly</td><td>add_vline(line_dash="dash")</td></tr>
+            <tr><td>Text alternative</td><td>One-sentence alt plus a “View data table” toggle</td><td>st.dataframe in a toggle</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- alerts -->
+    <div class="sys-sec">
+      <div class="sys-k"><h2>Banners</h2><p class="sm t2">Neutral for outdated results, amber only for unrecorded inputs, red only for real errors. Each has an icon and a bold title.</p></div>
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:720px">
+        <div class="rc-alert rc-alert-info" style="align-items:center"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.46-3.54"/><path d="M13 2.8v2.9h-2.9" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="flex:1"><strong>This estimate is out of date</strong><span class="t2">Speed limit changed from 60 mph to 40 mph.</span></div><button class="rc-btn rc-btn-primary rc-btn-sm" type="button">Calculate again</button></div>
+        <div class="rc-alert rc-alert-warn"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#7A4600" stroke-width="1.5" stroke-linejoin="round" style="flex:none;margin-top:1px" aria-hidden="true"><path d="M8 2.2l6.3 11H1.7z"/><path d="M8 6.6v3" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".55" fill="#7A4600" stroke="none"/></svg><div><strong>2 inputs are set to Information unavailable</strong><span>Unrecorded values can lower the estimate for reasons unrelated to the conditions.</span></div></div>
+        <div class="rc-alert rc-alert-err"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#B42318" stroke-width="1.5" style="flex:none;margin-top:1px" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4" stroke-linecap="round"/></svg><div><strong>The estimate couldn’t be calculated</strong><span>The model didn’t return a result. Your scenario hasn’t changed.</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="cv-sec">
+  <h2 class="cv-sec-h"><span class="cv-id">R</span>Design rationale</h2>
+  <div class="sys rc" style="padding-top:48px">
+    <div class="rat">
+      <div>
+        <h3>Information hierarchy</h3>
+        <p>Predict follows the task: configure, calculate, compare, understand. Inputs are grouped under three headings (Road, Environment, Time) separated by rules instead of boxes, so the form reads as three short lists. The result card is the only bordered surface on the page, which makes it the obvious place to look after calculating.</p>
+        <ul>
+          <li>Inside the card, the order is: probability, status, the two reference numbers, then the scale that shows all three together.</li>
+          <li>Plain-language influences come first. The SHAP waterfall and log-odds sit behind “View technical explanation”.</li>
+          <li>Data and Model insights read top to bottom: the conclusion first, then one chart per question, each with its own takeaway.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Probabilities, thresholds and baselines</h3>
+        <p>The old design used a 112px glowing number and a HIGH RISK tag, which made a screening threshold look like a danger line. The redesign keeps three separate quantities separate:</p>
+        <ul>
+          <li><b>Estimate</b>: the number at 72px, labelled in full.</li>
+          <li><b>Alert threshold</b>: a status chip worded “Above/Below alert threshold”, with a note that it is a precision–recall trade-off.</li>
+          <li><b>Dataset baseline</b>: the 23.3% average, so people can tell “above threshold” apart from “above typical”.</li>
+        </ul>
+        <p style="margin-top:8px">The live threshold (22.5%) sits just under the baseline, so an estimate like 22.9% is above one and below the other. The comparison pair and the scale make that visible instead of hiding it.</p>
+      </div>
+      <div>
+        <h3>Colour</h3>
+        <p>White page, near-black text, cool greys, and one blue (#3A55D0, 6.2:1 on white). Blue marks positive influence, the current estimate and the one bar each chart’s takeaway names. Everything else is neutral. Negative influence is a mid grey, which is lighter than the blue so the two separate in greyscale too.</p>
+        <ul>
+          <li>Amber appears only for unrecorded inputs, and red only for real errors.</li>
+          <li>Muted text is #687080 rather than the suggested #6F7785, which measures 4.3:1 on #F7F8FA and would fail AA.</li>
+          <li>Form-control edges are #8A919D (3.2:1) to meet the 3:1 non-text contrast rule. #C8CED7 is kept for decoration only.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Typography</h3>
+        <p>Inter at 15px/24px for body text, 14px for labels and 13px as the floor. Headings use weight 600 with slight negative tracking. Tabular figures keep percentages aligned in tables, bars and the comparison pair. The big number shrinks from 72px on desktop to 52px on mobile and stays the largest element on screen.</p>
+      </div>
+      <div>
+        <h3>Recording effects</h3>
+        <p>“Information unavailable” behaves like a recording gap, not a condition. In the data, collisions with an unrecorded road type are serious or fatal at 8.6%, against 25.0% for single carriageways. So the design separates unrecorded values in menus, styles them differently in the form (dashed, grey, badge, hint), hatches them in charts, tags them in explanations, and raises an amber note when they affect a result.</p>
+      </div>
+      <div>
+        <h3>Accessibility</h3>
+        <ul>
+          <li>Every text pairing meets WCAG AA. Control edges and chart marks meet 3:1.</li>
+          <li>Status, direction and reference lines all have a shape, line style or word as well as colour.</li>
+          <li>Real buttons, labels and range inputs, with visible 2px focus rings. Help icons have accessible names.</li>
+          <li>Each chart has a one-sentence text alternative and a data-table toggle. The result region is aria-live, so a new estimate is announced.</li>
+          <li>Spinners only animate when reduced motion isn’t requested. Layouts use flexible widths so 200% zoom reflows rather than clips.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Building it in Streamlit</h3>
+        <ul>
+          <li>Theme in .streamlit/config.toml: base “light”, primaryColor #3A55D0, backgroundColor #FFFFFF, secondaryBackgroundColor #F7F8FA, textColor #16181D, font Inter.</li>
+          <li>st.columns([0.37, 0.63]) for inputs and result. The result card is st.container(border=True). Groups are st.markdown headings with an hr.</li>
+          <li>Stale state: compare the current widget values with the ones stored alongside the result in st.session_state.</li>
+          <li>The comparison scale, status chip and explanation rows are small HTML blocks via st.markdown. Charts are Plotly using the spec above.</li>
+          <li>About the data uses st.dialog. Technical explanation, More road details and How to read these charts use st.expander.</li>
+          <li>Road surface is a new input. The app currently fixes it to Dry, so it needs exposing from the existing road_surface_conditions feature.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Dynamic values</h3>
+        <p>Every estimate, contribution and difference shown is an example. The threshold and model metrics come from the model bundle (save_model_data["threshold"] and ["metrics"]), and dataset rates should be computed from the data at load time and cached. Only the feature-importance ranking was copied from the saved SHAP chart, and it should be recomputed from shap_sample.pkl.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const pos = v => (v / 60 * 100).toFixed(2) + '%';
+    const mk = (v, cap) => ({ est: v.toFixed(1) + '%', pct: pos(v), cap, alt: 'Scale from 0 to 60 percent with the estimate at ' + v.toFixed(1) + ' percent, alert threshold 22.5 percent and dataset baseline 23.3 percent.' });
+    return { scales: [
+      mk(34.8, 'Above the threshold and the baseline'),
+      mk(14.6, 'Below both'),
+      mk(22.9, 'Edge case: above the threshold, below the baseline. The estimate label sits above the track, clear of both reference labels.')
+    ] };
+  }
+}
+</script>
+</body>
+</html>

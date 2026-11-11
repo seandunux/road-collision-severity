@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoadCast — Predict</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="roadcast/roadcast.css">
+</helmet>
+
+<div class="cv">
+
+<section class="cv-sec">
+  <h2 class="cv-sec-h"><span class="cv-id">P</span>Predict — desktop, 1440px</h2>
+  <p class="cv-sec-p">One template, seven states. Inputs on the left (grouped by heading, not boxed); the result on the right is the only bordered surface. Values are examples: the alert threshold (22.5%, from the model bundle) and every estimate must be loaded or computed at runtime. Note the threshold currently sits 0.8 points <em>below</em> the 23.3% baseline, so the scale places their labels on opposite sides of their markers.</p>
+  <div class="cv-row" style="flex-direction:column;gap:56px">
+  <sc-for list="{{ frames }}" as="fr" hint-placeholder-count="7">
+    <div class="cv-item">
+      <div class="cv-lbl"><span class="cv-id">{{ fr.code }}</span>{{ fr.name }}</div>
+      <div class="frame frame-d rc">
+
+        <header class="rc-hd">
+          <div class="rc-hd-top">
+            <div class="rc-brand">
+              <a class="rc-wordmark" href="#"><span class="rc-mark"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5.5 14.5L7 1.5M10.5 14.5L9 1.5"/><path d="M8 4v1.6M8 8.2v1.6M8 12.4V14" stroke-width="1.2"/></svg></span>RoadCast</a>
+              <p class="rc-tag">Explore how recorded road and environmental conditions relate to collision severity.</p>
+            </div>
+            <button class="rc-btn rc-btn-ghost rc-btn-sm" type="button"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.3v3.8" stroke-linecap="round"/><circle cx="8" cy="5" r=".5" fill="currentColor"/></svg>About the model</button>
+          </div>
+          <nav class="rc-nav" aria-label="Primary">
+            <a class="rc-tab" href="#" aria-current="page">Predict</a>
+            <a class="rc-tab" href="#">Data</a>
+            <a class="rc-tab" href="#">Model insights</a>
+          </nav>
+        </header>
+
+        <main style="padding:40px 80px 88px;display:grid;grid-template-columns:464px minmax(0,1fr);gap:64px;align-items:start">
+
+          <!-- ============ INPUTS ============ -->
+          <section aria-labelledby="scn-h" style="display:flex;flex-direction:column">
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:28px">
+              <h1 id="scn-h">Configure a scenario</h1>
+              <p class="t2">Choose the recorded conditions for a hypothetical collision.</p>
+            </div>
+
+            <sc-for list="{{ fr.groups }}" as="g" hint-placeholder-count="3">
+              <fieldset class="rc-group" style="margin:0;border-left:0;border-right:0;border-bottom:0;min-width:0">
+                <legend class="rc-group-h" style="padding:0;float:left;width:100%;margin-bottom:16px">{{ g.title }}</legend>
+                <div class="rc-grid2" style="clear:both">
+                  <sc-for list="{{ g.fields }}" as="f" hint-placeholder-count="4">
+                    <div class="rc-field" style="grid-column:{{ f.span }}">
+                      <div class="rc-label">
+                        <label for="{{ f.id }}">{{ f.label }}</label>
+                        <sc-if value="{{ f.hasHelp }}" hint-placeholder-val="{{ false }}"><button class="rc-help-btn" type="button" aria-label="{{ f.helpLabel }}"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.4 6.3a1.7 1.7 0 1 1 2.3 1.6c-.45.2-.7.55-.7 1.05v.25" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".55" fill="currentColor" stroke="none"/></svg></button></sc-if>
+                        <span style="flex:1"></span>
+                        <sc-if value="{{ f.changed }}" hint-placeholder-val="{{ false }}"><span class="rc-badge rc-badge-acc">Changed</span></sc-if>
+                        <sc-if value="{{ f.unrec }}" hint-placeholder-val="{{ false }}"><span class="rc-badge rc-badge-neu">Unrecorded</span></sc-if>
+                      </div>
+                      <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ true }}">
+                        <button class="rc-select {{ f.cls }}" id="{{ f.id }}" type="button" aria-haspopup="listbox"><span>{{ f.value }}</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:#4F5663" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+                      </sc-if>
+                      <sc-if value="{{ f.isSlider }}" hint-placeholder-val="{{ false }}">
+                        <div class="rc-slider">
+                          <div class="rc-slider-track"></div>
+                          <div class="rc-slider-fill" style="width:{{ f.pct }}"></div>
+                          <div class="rc-slider-thumb" style="left:{{ f.pct }}"></div>
+                          <input id="{{ f.id }}" type="range" min="0" max="23" value="{{ f.raw }}" aria-valuetext="{{ f.value }}" style="position:absolute;inset:0;width:100%;opacity:0;margin:0;cursor:pointer">
+                        </div>
+                        <div class="rc-slider-ends"><span>00:00</span><span class="rc-slider-val">{{ f.value }}</span><span>23:00</span></div>
+                      </sc-if>
+                      <sc-if value="{{ f.hasHint }}" hint-placeholder-val="{{ false }}"><p class="rc-hint">{{ f.hint }}</p></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </fieldset>
+            </sc-for>
+
+            <div class="rc-disc">
+              <button class="rc-disc-btn" type="button" aria-expanded="false"><span style="display:flex;flex-direction:column;gap:3px">More road details<small>A road · Trunk road unrecorded · No special conditions · No crossing nearby</small></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+            </div>
+            <div class="rc-disc">
+              <button class="rc-disc-btn" type="button" aria-expanded="false"><span style="display:flex;flex-direction:column;gap:3px">Values the model assumes<small>Junction layout, second road and carriageway hazards</small></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:28px">
+              <sc-if value="{{ fr.isCalc }}" hint-placeholder-val="{{ false }}">
+                <button class="rc-btn rc-btn-primary" type="button" disabled style="flex:1"><span class="rc-spin"></span>Calculating…</button>
+              </sc-if>
+              <sc-if value="{{ fr.notCalc }}" hint-placeholder-val="{{ true }}">
+                <button class="rc-btn rc-btn-primary" type="button" style="flex:1">{{ fr.cta }}</button>
+              </sc-if>
+              <button class="rc-btn rc-btn-secondary" type="button">Reset scenario</button>
+            </div>
+          </section>
+
+          <!-- ============ RESULT ============ -->
+          <section aria-label="Estimate" aria-live="polite" style="display:flex;flex-direction:column;gap:40px;min-width:0">
+
+            <sc-if value="{{ fr.isEmpty }}" hint-placeholder-val="{{ false }}">
+              <div class="rc-card" style="display:flex;flex-direction:column;gap:24px;padding:32px">
+                <div style="display:flex;flex-direction:column;gap:8px;max-width:480px">
+                  <h2>Your estimate will appear here</h2>
+                  <p class="t2">Configure the recorded road, environmental, and time conditions, then calculate the estimate.</p>
+                </div>
+                <div>
+                  <div class="rc-scale" style="padding-top:8px">
+                    <div class="rc-scale-track">
+                      <div class="rc-scale-thr" style="left:{{ thrPct }}"></div>
+                      <div class="rc-scale-base" style="left:{{ basePct }}"></div>
+                    </div>
+                  </div>
+                  <div class="rc-scale-labels">
+                    <div class="rc-scale-lt" style="left:{{ thrPct }}"><b>22.5%</b>Alert threshold</div>
+                    <div class="rc-scale-lb" style="left:{{ basePct }}"><b>23.3%</b>Dataset baseline</div>
+                  </div>
+                  <div class="rc-scale-ticks"><span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span><span>60%</span></div>
+                </div>
+                <p class="xs mut">Based on police-reported STATS19 collisions from Great Britain, 2020–2024.</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ fr.isCalc }}" hint-placeholder-val="{{ false }}">
+              <div class="rc-card" style="display:flex;flex-direction:column;gap:22px">
+                <div style="display:flex;align-items:center;gap:10px" role="status"><span class="rc-spin rc-spin-d"></span><span class="rc-kicker" style="color:#16181D">Calculating estimate…</span></div>
+                <div class="rc-skel" style="width:220px;height:64px"></div>
+                <div class="rc-skel" style="width:190px;height:30px;border-radius:999px"></div>
+                <div class="rc-skel" style="height:78px"></div>
+                <div class="rc-skel" style="height:10px;margin-top:20px"></div>
+                <div class="rc-skel" style="width:60%;height:14px"></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ fr.isError }}" hint-placeholder-val="{{ false }}">
+              <div class="rc-card" style="display:flex;flex-direction:column;gap:20px">
+                <div class="rc-alert rc-alert-err" role="alert">
+                  <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#B42318" stroke-width="1.5" style="flex:none;margin-top:1px" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4" stroke-linecap="round"/></svg>
+                  <div style="display:flex;flex-direction:column;gap:4px"><strong>The estimate couldn’t be calculated</strong><span>The model didn’t return a result. Your scenario hasn’t changed, so you can try again. If this keeps happening, reload the page.</span></div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:center"><button class="rc-btn rc-btn-secondary" type="button"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.46-3.54"/><path d="M13 2.8v2.9h-2.9"/></svg>Try again</button></div>
+                <div class="rc-disc"><button class="rc-disc-btn" type="button" aria-expanded="false">Technical details<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ fr.isResult }}" hint-placeholder-val="{{ true }}">
+              <div class="rc-card" style="display:flex;flex-direction:column;gap:0">
+                <sc-if value="{{ fr.stale }}" hint-placeholder-val="{{ false }}">
+                  <div class="rc-alert rc-alert-info" role="status" style="margin-bottom:24px;align-items:center">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.46-3.54"/><path d="M13 2.8v2.9h-2.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:2px"><strong>This estimate is out of date</strong><span class="t2">Speed limit changed from 60 mph to 40 mph. Calculate again to update it.</span></div>
+                    <button class="rc-btn rc-btn-primary rc-btn-sm" type="button">Calculate again</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ fr.missing }}" hint-placeholder-val="{{ false }}">
+                  <div class="rc-alert rc-alert-warn" style="margin-bottom:24px">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#7A4600" stroke-width="1.5" stroke-linejoin="round" style="flex:none;margin-top:1px" aria-hidden="true"><path d="M8 2.2l6.3 11H1.7z"/><path d="M8 6.6v3" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".55" fill="#7A4600" stroke="none"/></svg>
+                    <div style="display:flex;flex-direction:column;gap:2px"><strong>2 inputs are set to Information unavailable</strong><span>Road type and weather. In the training data, unrecorded values often accompany less detailed reports, which can lower the estimate for reasons unrelated to the road or weather.</span></div>
+                  </div>
+                </sc-if>
+
+                <div style="display:flex;flex-direction:column;gap:22px;opacity:{{ fr.bodyOp }}">
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <div style="display:flex;align-items:center;gap:10px"><p class="rc-kicker">Estimated probability of a serious or fatal outcome</p><sc-if value="{{ fr.stale }}" hint-placeholder-val="{{ false }}"><span class="rc-badge rc-badge-neu">Outdated</span></sc-if></div>
+                    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+                      <p class="rc-big">{{ fr.est }}</p>
+                      <sc-if value="{{ fr.above }}" hint-placeholder-val="{{ true }}">
+                        <span class="rc-status rc-status-above"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5l5 8.5H1z" fill="currentColor"/></svg>Above alert threshold</span>
+                      </sc-if>
+                      <sc-if value="{{ fr.below }}" hint-placeholder-val="{{ false }}">
+                        <span class="rc-status rc-status-below"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10.5L1.6 2.5h8.8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>Below alert threshold</span>
+                      </sc-if>
+                    </div>
+                  </div>
+
+                  <div class="rc-cmp">
+                    <div><span class="rc-cmp-k"><span class="rc-glyph-solid"></span>Alert threshold</span><span class="rc-cmp-v">22.5%</span><span class="rc-cmp-d">{{ fr.dThr }}</span></div>
+                    <div><span class="rc-cmp-k"><span class="rc-glyph-dash"></span>Dataset baseline</span><span class="rc-cmp-v">23.3%</span><span class="rc-cmp-d">{{ fr.dBase }}</span></div>
+                  </div>
+
+                  <figure style="margin:0" role="img" aria-label="{{ fr.scaleAlt }}">
+                    <div class="rc-scale">
+                      <div class="rc-scale-est" style="left:{{ fr.estPct }}">This estimate {{ fr.est }}</div>
+                      <div class="rc-scale-track">
+                        <div class="rc-scale-fill" style="width:{{ fr.estPct }}"></div>
+                        <div class="rc-scale-thr" style="left:{{ thrPct }}"></div>
+                        <div class="rc-scale-base" style="left:{{ basePct }}"></div>
+                        <div class="rc-scale-dot" style="left:{{ fr.estPct }}"></div>
+                      </div>
+                    </div>
+                    <div class="rc-scale-labels">
+                      <div class="rc-scale-lt" style="left:{{ thrPct }}"><b>22.5%</b>Alert threshold</div>
+                      <div class="rc-scale-lb" style="left:{{ basePct }}"><b>23.3%</b>Dataset baseline</div>
+                    </div>
+                    <div class="rc-scale-ticks" aria-hidden="true"><span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span><span>50%</span><span>60%</span></div>
+                  </figure>
+
+                  <p class="sm t2" style="max-width:600px">The alert threshold reflects the model’s selected precision–recall trade-off. It is not a boundary between safe and dangerous conditions.</p>
+
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid #E1E5EA;padding-top:8px;margin-bottom:-12px">
+                    <p class="xs mut">Based on police-reported STATS19 collisions from Great Britain, 2020–2024.</p>
+                    <button class="rc-link-btn" type="button">About the data</button>
+                  </div>
+                </div>
+              </div>
+
+              <section aria-labelledby="{{ fr.xid }}" style="display:flex;flex-direction:column;gap:20px;opacity:{{ fr.bodyOp }}">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <h2 id="{{ fr.xid }}">What influenced this estimate</h2>
+                  <p class="sm t2">These are model influences, not proven causes. Missing or unknown values may reflect recording practices.</p>
+                </div>
+                <div class="rc-xcols">
+                  <div>
+                    <h3 class="rc-xh"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#3A55D0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4"/></svg>Factors increasing this estimate</h3>
+                    <sc-for list="{{ fr.inc }}" as="x" hint-placeholder-count="4">
+                      <div class="rc-xrow">
+                        <div><div class="rc-xname">{{ x.name }}</div><div class="rc-xval">{{ x.value }}<sc-if value="{{ x.unrec }}" hint-placeholder-val="{{ false }}"><span class="rc-badge rc-badge-neu">Unrecorded</span></sc-if></div></div>
+                        <div class="rc-xbar"><div class="rc-xbar-t"><div class="rc-xbar-f" style="width:{{ x.w }};background:#3A55D0"></div></div><span class="rc-xbar-l">{{ x.strength }}</span></div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div>
+                    <h3 class="rc-xh"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#4F5663" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>Factors reducing this estimate</h3>
+                    <sc-for list="{{ fr.red }}" as="x" hint-placeholder-count="4">
+                      <div class="rc-xrow">
+                        <div><div class="rc-xname">{{ x.name }}</div><div class="rc-xval">{{ x.value }}<sc-if value="{{ x.unrec }}" hint-placeholder-val="{{ false }}"><span class="rc-badge rc-badge-neu">Unrecorded</span></sc-if></div></div>
+                        <div class="rc-xbar"><div class="rc-xbar-t"><div class="rc-xbar-f" style="width:{{ x.w }};background:#7A818D"></div></div><span class="rc-xbar-l">{{ x.strength }}</span></div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <div class="rc-disc" style="margin-top:4px">
+                  <button class="rc-disc-btn" type="button" aria-expanded="{{ fr.techOpenStr }}"><span style="display:flex;flex-direction:column;gap:3px">View technical explanation<small>SHAP contributions on the model’s log-odds scale</small></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ fr.chev }}" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+                  <sc-if value="{{ fr.techOpen }}" hint-placeholder-val="{{ false }}">
+                    <div class="rc-disc-body">
+                      <p class="sm t2" style="max-width:640px">Each bar is one model feature’s push on the raw model output, starting from the average output across the training data. The raw output is in log-odds; the percentage above is produced from it by a separate calibration step, so the two scales don’t map one-to-one.</p>
+                      <figure style="margin:0;display:flex;flex-direction:column;gap:4px" role="img" aria-label="Waterfall chart: from an average model output of minus 0.08 to minus 1.49 for this scenario. Largest contributions: speed limit 30, minus 0.42; not rural, minus 0.27; not single carriageway, minus 0.19.">
+                        <sc-for list="{{ water }}" as="w" hint-placeholder-count="12">
+                          <div style="display:grid;grid-template-columns:268px minmax(0,1fr) 52px;align-items:center;gap:12px;min-height:26px">
+                            <span class="xs" style="text-align:right;color:#16181D">{{ w.label }}</span>
+                            <div style="position:relative;height:26px">
+                              <div style="position:absolute;top:0;bottom:0;left:{{ w.basePos }};border-left:1px solid #C8CED7"></div>
+                              <div style="position:absolute;top:6px;height:14px;border-radius:3px;left:{{ w.left }};width:{{ w.width }};background:{{ w.color }}"></div>
+                            </div>
+                            <span class="xs num" style="color:#16181D;font-weight:600">{{ w.valText }}</span>
+                          </div>
+                        </sc-for>
+                        <div style="display:grid;grid-template-columns:268px minmax(0,1fr) 52px;gap:12px;margin-top:8px">
+                          <span></span>
+                          <div class="xs t2" style="display:flex;justify-content:space-between"><span>Average output −0.08</span><span>This scenario −1.49</span></div>
+                          <span></span>
+                        </div>
+                      </figure>
+                    </div>
+                  </sc-if>
+                </div>
+              </section>
+            </sc-if>
+
+          </section>
+        </main>
+      </div>
+    </div>
+  </sc-for>
+  </div>
+</section>
+
+<!-- ======================= MOBILE ======================= -->
+<section class="cv-sec">
+  <h2 class="cv-sec-h"><span class="cv-id">M</span>Predict — mobile, 390px</h2>
+  <p class="cv-sec-p">Single column; inputs stack above the result. The primary action stays pinned to the bottom of the screen while scenario inputs scroll. After calculating, the page scrolls to the estimate. All targets are at least 44px.</p>
+  <div class="cv-row">
+
+    <div class="cv-item">
+      <div class="cv-lbl"><span class="cv-id">M1</span>Scenario inputs, action pinned</div>
+      <div class="frame frame-m rc" style="height:844px;position:relative">
+        <header class="rc-m-hd">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <a class="rc-wordmark" href="#" style="font-size:18px"><span class="rc-mark"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5.5 14.5L7 1.5M10.5 14.5L9 1.5"/><path d="M8 4v1.6M8 8.2v1.6M8 12.4V14" stroke-width="1.2"/></svg></span>RoadCast</a>
+            <button class="rc-icon-btn" type="button" aria-label="About the model"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.3v3.8" stroke-linecap="round"/><circle cx="8" cy="5" r=".5" fill="currentColor"/></svg></button>
+          </div>
+          <nav class="rc-m-nav" aria-label="Primary">
+            <a class="rc-tab" href="#" aria-current="page">Predict</a>
+            <a class="rc-tab" href="#">Data</a>
+            <a class="rc-tab" href="#">Insights</a>
+          </nav>
+        </header>
+        <main class="rc-m-main" style="display:flex;flex-direction:column">
+          <h1 style="font-size:24px;line-height:32px">Configure a scenario</h1>
+          <p class="sm t2" style="margin:4px 0 20px">Choose the recorded conditions for a hypothetical collision.</p>
+          <sc-for list="{{ mGroups }}" as="g" hint-placeholder-count="2">
+            <fieldset class="rc-group" style="margin:0;border-left:0;border-right:0;border-bottom:0;min-width:0;gap:14px;padding-bottom:20px">
+              <legend class="rc-group-h" style="padding:0;float:left;width:100%;margin-bottom:14px">{{ g.title }}</legend>
+              <div style="clear:both;display:flex;flex-direction:column;gap:14px">
+                <sc-for list="{{ g.fields }}" as="f" hint-placeholder-count="4">
+                  <div class="rc-field">
+                    <div class="rc-label"><label for="{{ f.mid }}">{{ f.label }}</label><sc-if value="{{ f.hasHelp }}" hint-placeholder-val="{{ false }}"><button class="rc-help-btn" type="button" aria-label="{{ f.helpLabel }}" style="width:32px;height:32px;margin:-6px 0"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M6.4 6.3a1.7 1.7 0 1 1 2.3 1.6c-.45.2-.7.55-.7 1.05v.25" stroke-linecap="round"/><circle cx="8" cy="11.3" r=".55" fill="currentColor" stroke="none"/></svg></button></sc-if></div>
+                    <button class="rc-select" id="{{ f.mid }}" type="button" aria-haspopup="listbox" style="min-height:48px;font-size:16px"><span>{{ f.value }}</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:#4F5663" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+                  </div>
+                </sc-for>
+              </div>
+            </fieldset>
+          </sc-for>
+        </main>
+        <div class="rc-m-bar">
+          <button class="rc-btn rc-btn-primary" type="button" style="flex:1;min-height:48px">Calculate estimate</button>
+          <button class="rc-btn rc-btn-secondary" type="button" style="min-height:48px">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cv-item">
+      <div class="cv-lbl"><span class="cv-id">M2</span>Result, above threshold (full scroll)</div>
+      <div class="frame frame-m rc">
+        <header class="rc-m-hd">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <a class="rc-wordmark" href="#" style="font-size:18px"><span class="rc-mark"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5.5 14.5L7 1.5M10.5 14.5L9 1.5"/><path d="M8 4v1.6M8 8.2v1.6M8 12.4V14" stroke-width="1.2"/></svg></span>RoadCast</a>
+            <button class="rc-icon-btn" type="button" aria-label="About the model"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.3v3.8" stroke-linecap="round"/><circle cx="8" cy="5" r=".5" fill="currentColor"/></svg></button>
+          </div>
+          <nav class="rc-m-nav" aria-label="Primary">
+            <a class="rc-tab" href="#" aria-current="page">Predict</a>
+            <a class="rc-tab" href="#">Data</a>
+            <a class="rc-tab" href="#">Insights</a>
+          </nav>
+        </header>
+        <main class="rc-m-main" style="display:flex;flex-direction:column;gap:28px">
+          <a class="rc-link-btn" href="#" style="min-height:32px;align-self:flex-start;text-decoration:none"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10l4-4 4 4"/></svg>Edit scenario · Rural, 60 mph, 22:00</a>
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <p class="rc-kicker" style="font-size:14px;line-height:20px">Estimated probability of a serious or fatal outcome</p>
+              <p class="rc-big" style="font-size:52px">34.8%</p>
+              <span class="rc-status rc-status-above" style="align-self:flex-start"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5l5 8.5H1z" fill="currentColor"/></svg>Above alert threshold</span>
+            </div>
+            <div class="rc-cmp">
+              <div><span class="rc-cmp-k"><span class="rc-glyph-solid"></span>Alert threshold</span><span class="rc-cmp-v" style="font-size:18px">22.5%</span><span class="rc-cmp-d">12.3 points above</span></div>
+              <div style="padding-left:16px"><span class="rc-cmp-k"><span class="rc-glyph-dash"></span>Dataset baseline</span><span class="rc-cmp-v" style="font-size:18px">23.3%</span><span class="rc-cmp-d">11.5 points above</span></div>
+            </div>
+            <figure style="margin:0" role="img" aria-label="Scale from 0 to 60 percent. This estimate, 34.8 percent, is to the right of the alert threshold at 22.5 percent and the dataset baseline at 23.3 percent.">
+              <div class="rc-scale">
+                <div class="rc-scale-est" style="left:58%">This estimate 34.8%</div>
+                <div class="rc-scale-track"><div class="rc-scale-fill" style="width:58%"></div><div class="rc-scale-thr" style="left:37.5%"></div><div class="rc-scale-base" style="left:38.83%"></div><div class="rc-scale-dot" style="left:58%"></div></div>
+              </div>
+              <div class="rc-scale-labels"><div class="rc-scale-lt" style="left:37.5%"><b>22.5%</b>Threshold</div><div class="rc-scale-lb" style="left:38.83%"><b>23.3%</b>Baseline</div></div>
+              <div class="rc-scale-ticks" aria-hidden="true"><span>0%</span><span>20%</span><span>40%</span><span>60%</span></div>
+            </figure>
+            <p class="sm t2">The alert threshold reflects the model’s selected precision–recall trade-off. It is not a boundary between safe and dangerous conditions.</p>
+          </div>
+          <section style="display:flex;flex-direction:column;gap:14px">
+            <h2 style="font-size:19px;line-height:26px">What influenced this estimate</h2>
+            <p class="sm t2">These are model influences, not proven causes. Missing or unknown values may reflect recording practices.</p>
+            <div>
+              <h3 class="rc-xh"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#3A55D0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4"/></svg>Increasing this estimate</h3>
+              <sc-for list="{{ mInc }}" as="x" hint-placeholder-count="3">
+                <div class="rc-xrow" style="grid-template-columns:minmax(0,1fr) 96px"><div><div class="rc-xname">{{ x.name }}</div><div class="rc-xval">{{ x.value }}</div></div><div class="rc-xbar"><div class="rc-xbar-t"><div class="rc-xbar-f" style="width:{{ x.w }};background:#3A55D0"></div></div><span class="rc-xbar-l">{{ x.strength }}</span></div></div>
+              </sc-for>
+            </div>
+            <div>
+              <h3 class="rc-xh"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#4F5663" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>Reducing this estimate</h3>
+              <sc-for list="{{ mRed }}" as="x" hint-placeholder-count="3">
+                <div class="rc-xrow" style="grid-template-columns:minmax(0,1fr) 96px"><div><div class="rc-xname">{{ x.name }}</div><div class="rc-xval">{{ x.value }}<sc-if value="{{ x.unrec }}" hint-placeholder-val="{{ false }}"><span class="rc-badge rc-badge-neu">Unrecorded</span></sc-if></div></div><div class="rc-xbar"><div class="rc-xbar-t"><div class="rc-xbar-f" style="width:{{ x.w }};background:#7A818D"></div></div><span class="rc-xbar-l">{{ x.strength }}</span></div></div>
+              </sc-for>
+            </div>
+            <div class="rc-disc"><button class="rc-disc-btn" type="button" aria-expanded="false">View technical explanation<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button></div>
+            <div class="rc-disc"><button class="rc-disc-btn" type="button" aria-expanded="false">About the data<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button></div>
+            <p class="xs mut">Based on police-reported STATS19 collisions from Great Britain, 2020–2024.</p>
+          </section>
+        </main>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const TH = 22.5, BASE = 23.3, MAX = 60;
+    const pos = v => (Math.min(v, MAX) / MAX * 100).toFixed(2) + '%';
+    const diff = (v, r) => Math.abs(v - r).toFixed(1) + ' points ' + (v >= r ? 'above' : 'below');
+    const UN = 'Information unavailable';
+    const HELP = {
+      road: 'Information unavailable means the road type was not recorded. It tends to accompany less detailed reports, which can lower the estimate for reasons unrelated to the road.',
+      junc: 'Not at a junction is the most common category. Information unavailable means the control type was not recorded: a reporting gap, not a safer junction.',
+      light: 'Dark, lighting not recorded means it was dark but the lighting detail was not captured at the scene.',
+      weather: 'Information unavailable reflects how the report was completed, not the actual weather.',
+      surface: 'The recorded state of the road surface at the scene.'
+    };
+    let uid = 0;
+    const F = (label, value, o) => {
+      o = o || {};
+      const unrec = value === UN;
+      uid++;
+      return {
+        label, value, id: 'f' + uid, mid: 'm' + uid,
+        isSelect: !o.slider, isSlider: !!o.slider, raw: o.raw || 0,
+        span: o.full ? '1 / -1' : 'auto',
+        hasHelp: !!o.help, helpLabel: 'About ' + label.toLowerCase(),
+        changed: !!o.changed, unrec,
+        cls: (unrec ? 'is-unrec ' : '') + (o.changed ? 'is-changed' : ''),
+        pct: o.slider ? (o.raw / 23 * 100).toFixed(1) + '%' : '0%',
+        hasHint: !!o.hint || unrec,
+        hint: o.hint || (unrec ? 'Not recorded. May lower the estimate for reasons unrelated to the actual conditions.' : '')
+      };
+    };
+    const groupsFor = s => [
+      { title: 'Road', fields: [
+        F('Speed limit', s.speed, { changed: s.speedChanged }), F('Area type', s.area),
+        F('Road type', s.road, { help: HELP.road }), F('Junction control', s.junc, { help: HELP.junc })
+      ] },
+      { title: 'Environment', fields: [
+        F('Lighting', s.light, { help: HELP.light }), F('Weather', s.weather, { help: HELP.weather }),
+        F('Road surface', s.surface, { help: HELP.surface })
+      ] },
+      { title: 'Time', fields: [
+        F('Day of week', s.day), F('Month', s.month),
+        F('Time of day', String(s.hour).padStart(2, '0') + ':00', { slider: true, raw: s.hour, full: true })
+      ] }
+    ];
+    const S0 = { speed: '30 mph', area: 'Urban', road: 'Single carriageway', junc: 'Not at a junction', light: 'Daylight', weather: 'Fine', surface: 'Dry', day: 'Sunday', month: 'June', hour: 17 };
+    const SH = { speed: '60 mph', area: 'Rural', road: 'Single carriageway', junc: 'Not at a junction', light: 'Dark – no street lighting', weather: 'Raining', surface: 'Wet or damp', day: 'Saturday', month: 'November', hour: 22 };
+    const SL = { speed: '30 mph', area: 'Urban', road: 'Roundabout', junc: 'Traffic signal', light: 'Daylight', weather: 'Fine', surface: 'Dry', day: 'Tuesday', month: 'June', hour: 10 };
+    const SS = Object.assign({}, SH, { speed: '40 mph', speedChanged: true });
+    const SM = { speed: '30 mph', area: 'Urban', road: UN, junc: 'Not at a junction', light: 'Dark – street lights lit', weather: UN, surface: 'Dry', day: 'Friday', month: 'March', hour: 19 };
+
+    const strength = v => v >= 0.15 ? 'Strong' : v >= 0.07 ? 'Moderate' : 'Slight';
+    const X = list => list.map(([name, value, v]) => ({ name, value, unrec: value === UN, w: Math.max(v / 0.42 * 100, 4).toFixed(1) + '%', strength: strength(v) }));
+    const incH = X([['Speed limit', '60 mph', .31], ['Area type', 'Rural', .18], ['Road type', 'Single carriageway', .14], ['Lighting', 'Dark – no street lighting', .09], ['Time of day', '22:00', .06]]);
+    const redH = X([['Trunk road', UN, .12], ['Special conditions', 'None', .10], ['Weather', 'Raining', .04], ['Month', 'November', .02]]);
+    const incL = X([['Special conditions', 'None', .05], ['Day of week', 'Tuesday', .02]]);
+    const redL = X([['Speed limit', '30 mph', .42], ['Area type', 'Urban', .27], ['Road type', 'Roundabout', .19], ['Time of day', '10:00', .08], ['Junction control', 'Traffic signal', .06]]);
+    const incM = X([['Lighting', 'Dark – street lights lit', .05], ['Time of day', '19:00', .03]]);
+    const redM = X([['Road type', UN, .38], ['Speed limit', '30 mph', .36], ['Area type', 'Urban', .24], ['Weather', UN, .14], ['Trunk road', UN, .05]]);
+
+    const result = (est, extra) => Object.assign({
+      isEmpty: false, isCalc: false, notCalc: true, isError: false, isResult: true,
+      est: est.toFixed(1) + '%', estPct: pos(est), above: est >= TH, below: est < TH,
+      dThr: diff(est, TH), dBase: diff(est, BASE),
+      scaleAlt: 'Scale from 0 to 60 percent. This estimate, ' + est.toFixed(1) + ' percent, is ' + (est >= TH ? 'above' : 'below') + ' the alert threshold at 22.5 percent and ' + (est >= BASE ? 'above' : 'below') + ' the dataset baseline at 23.3 percent.',
+      stale: false, missing: false, bodyOp: '1', techOpen: false, techOpenStr: 'false', chev: 'none', cta: 'Calculate estimate'
+    }, extra);
+    const base = { isEmpty: false, isCalc: false, notCalc: true, isError: false, isResult: false, cta: 'Calculate estimate', inc: [], red: [], est: '', estPct: '0%', stale: false, missing: false, bodyOp: '1', techOpen: false, techOpenStr: 'false', chev: 'none', above: false, below: false };
+
+    const frames = [
+      Object.assign({}, base, { code: 'P1', name: 'Empty — before the first calculation (app defaults)', groups: groupsFor(S0), isEmpty: true }),
+      Object.assign({}, base, { code: 'P2', name: 'Calculating', groups: groupsFor(SH), isCalc: true, notCalc: false }),
+      Object.assign(result(34.8, { inc: incH, red: redH }), { code: 'P3', name: 'Above alert threshold', groups: groupsFor(SH), xid: 'x3' }),
+      Object.assign(result(14.6, { inc: incL, red: redL, techOpen: true, techOpenStr: 'true', chev: 'rotate(180deg)' }), { code: 'P4', name: 'Below alert threshold — technical explanation expanded', groups: groupsFor(SL), xid: 'x4' }),
+      Object.assign(result(34.8, { inc: incH, red: redH, stale: true, bodyOp: '0.5', cta: 'Calculate again' }), { code: 'P5', name: 'Inputs changed after calculation — result marked outdated', groups: groupsFor(SS), xid: 'x5' }),
+      Object.assign(result(11.2, { inc: incM, red: redM, missing: true }), { code: 'P6', name: 'Missing information — two inputs unrecorded', groups: groupsFor(SM), xid: 'x6' }),
+      Object.assign({}, base, { code: 'P7', name: 'Runtime or model error', groups: groupsFor(SH), isError: true })
+    ];
+
+    // technical waterfall (log-odds) for the below-threshold scenario
+    const b0 = -0.08, lo = -1.7, hi = 0.2;
+    const wl = [['Speed limit · 30', -0.42], ['Rural area · no', -0.27], ['Single carriageway · no', -0.19], ['Junction control: not controlled · no', -0.14], ['Trunk road · no', -0.12], ['Time of day · 10:00', -0.08], ['Junction control: traffic signal · yes', -0.06], ['Special conditions: none · yes', 0.05], ['Lighting: dark, lights lit · no', -0.04], ['Month · June', -0.03], ['Day of week · Tuesday', 0.02], ['73 other features', -0.13]];
+    const p = v => (v - lo) / (hi - lo) * 100;
+    let c = b0; const water = [];
+    for (let i = wl.length - 1; i >= 0; i--) {
+      const [label, v] = wl[i]; const a = c, b = c + v; c = b;
+      water.unshift({ label, valText: (v > 0 ? '+' : '−') + Math.abs(v).toFixed(2),
+        left: p(Math.min(a, b)).toFixed(2) + '%', width: Math.max(p(Math.max(a, b)) - p(Math.min(a, b)), 0.6).toFixed(2) + '%',
+        color: v > 0 ? '#3A55D0' : '#7A818D', basePos: p(b0).toFixed(2) + '%' });
+    }
+
+    const mg = groupsFor(SH);
+    const mGroups = [mg[0], { title: 'Environment', fields: mg[1].fields.slice(0, 2) }];
+
+    return { frames, water, thrPct: pos(TH), basePct: pos(BASE), mGroups, mInc: incH.slice(0, 3), mRed: redH.slice(0, 2) };
+  }
+}
+</script>
+</body>
+</html>

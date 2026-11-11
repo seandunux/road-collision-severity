@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoadCast — Data and Model insights</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="roadcast/roadcast.css">
+</helmet>
+
+<div class="cv">
+
+<!-- ======================= DATA — DESKTOP ======================= -->
+<section class="cv-sec">
+  <h2 class="cv-sec-h"><span class="cv-id">D</span>Data — desktop, 1440px</h2>
+  <p class="cv-sec-p">A narrative, not a dashboard grid: one question per row, the takeaway on the left, one chart on the right, each with a table alternative. Rates are computed from the 503,475 raw records in data/dataset.csv; the dashed line on every rate chart is the 23.3% baseline.</p>
+  <div class="cv-item">
+    <div class="cv-lbl"><span class="cv-id">D1</span>Understand the data</div>
+    <div class="frame frame-d rc">
+      <header class="rc-hd">
+        <div class="rc-hd-top">
+          <div class="rc-brand">
+            <a class="rc-wordmark" href="#"><span class="rc-mark"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5.5 14.5L7 1.5M10.5 14.5L9 1.5"/><path d="M8 4v1.6M8 8.2v1.6M8 12.4V14" stroke-width="1.2"/></svg></span>RoadCast</a>
+            <p class="rc-tag">Explore how recorded road and environmental conditions relate to collision severity.</p>
+          </div>
+          <button class="rc-btn rc-btn-ghost rc-btn-sm" type="button"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.3v3.8" stroke-linecap="round"/><circle cx="8" cy="5" r=".5" fill="currentColor"/></svg>About the model</button>
+        </div>
+        <nav class="rc-nav" aria-label="Primary">
+          <a class="rc-tab" href="#">Predict</a>
+          <a class="rc-tab" href="#" aria-current="page">Data</a>
+          <a class="rc-tab" href="#">Model insights</a>
+        </nav>
+      </header>
+
+      <main style="padding:48px 80px 96px;display:flex;flex-direction:column">
+        <div style="display:flex;flex-direction:column;gap:8px;max-width:720px;margin-bottom:32px">
+          <h1>Understand the data</h1>
+          <p class="t2" style="font-size:16px;line-height:25px">Explore the police-reported collision records used to train and evaluate the model.</p>
+        </div>
+
+        <div class="rc-stats" role="list">
+          <div class="rc-stat" role="listitem"><span class="rc-stat-v">503,475</span><span class="rc-stat-k">Raw collision records</span></div>
+          <div class="rc-stat" role="listitem"><span class="rc-stat-v">23.3%</span><span class="rc-stat-k">Serious or fatal · 117,468 collisions</span></div>
+          <div class="rc-stat" role="listitem"><span class="rc-stat-v">2020–2024</span><span class="rc-stat-k">Coverage · Great Britain</span></div>
+          <div class="rc-stat" role="listitem"><span class="rc-stat-v" style="color:#4F5663">503,022</span><span class="rc-stat-k">Cleaned records used for modelling</span></div>
+        </div>
+        <p class="sm t2" style="margin:14px 0 24px;max-width:760px">These figures describe police-reported collisions. Missing or unknown values may partly reflect reporting practices.</p>
+
+        <!-- 1. class balance -->
+        <section class="rc-story" aria-labelledby="d-q1">
+          <div class="rc-story-t">
+            <h2 id="d-q1">How often is the outcome serious or fatal?</h2>
+            <p class="rc-takeaway">About 1 in 4 recorded collisions had a serious or fatal outcome.</p>
+            <p class="sm t2">This imbalance is why the model is class-weighted during training and its output is calibrated afterwards.</p>
+          </div>
+          <figure style="margin:0;max-width:760px;align-self:center" role="img" aria-label="Class balance: 386,007 slight collisions, 76.7 percent; 117,468 serious or fatal collisions, 23.3 percent.">
+            <div style="display:flex;height:48px;border-radius:6px;overflow:hidden;gap:2px">
+              <div style="width:76.7%;background:#E9ECF0;display:flex;align-items:center;padding:0 16px;font-size:15px;font-weight:600">Slight</div>
+              <div style="flex:1;background:#3A55D0;color:#fff;display:flex;align-items:center;padding:0 14px;font-size:15px;font-weight:600">Serious or fatal</div>
+            </div>
+            <div style="display:flex;margin-top:10px" class="sm num">
+              <div style="width:76.7%"><b>76.7%</b> <span class="t2">· 386,007</span></div>
+              <div style="flex:1;padding-left:2px"><b>23.3%</b> <span class="t2">· 117,468</span></div>
+            </div>
+          </figure>
+        </section>
+
+        <!-- 2. speed limit -->
+        <section class="rc-story" aria-labelledby="d-q2">
+          <div class="rc-story-t">
+            <h2 id="d-q2">Severity rate by speed limit</h2>
+            <p class="rc-takeaway">The recorded rate rises with the speed limit, peaking at 33.8% on 60 mph roads.</p>
+            <p class="sm t2">70 mph roads, mostly motorways and dual carriageways, sit lower at 24.4%. This is an association in recorded collisions, not evidence that a speed limit alone changes outcomes.</p>
+            <button class="rc-link-btn" type="button" aria-expanded="true" style="align-self:flex-start">Hide data table</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:28px;max-width:760px;width:100%">
+            <figure style="margin:0" role="img" aria-label="Column chart of serious or fatal rate by speed limit: 20 mph 18.4%, 30 mph 21.7%, 40 mph 25.0%, 50 mph 27.5%, 60 mph 33.8%, 70 mph 24.4%. Baseline 23.3%.">
+              <div class="rc-vbars" style="height:232px">
+                <div style="position:absolute;left:0;right:0;bottom:116.5px;border-top:1.5px dashed #4F5663"></div>
+                <div class="xs t2" style="position:absolute;right:0;bottom:120px;background:#fff;padding:0 0 2px 6px">Baseline 23.3%</div>
+                <sc-for list="{{ speed }}" as="s" hint-placeholder-count="6">
+                  <div class="rc-vbar"><span class="rc-vbar-v">{{ s.v }}</span><div class="rc-vbar-b" style="height:{{ s.h }};background:{{ s.c }}"></div></div>
+                </sc-for>
+              </div>
+              <div class="rc-vbar-x"><sc-for list="{{ speed }}" as="s" hint-placeholder-count="6"><div>{{ s.label }}</div></sc-for></div>
+            </figure>
+            <table class="rc-table" style="max-width:520px">
+              <caption class="xs t2" style="text-align:left;padding-bottom:6px">Serious or fatal rate by speed limit</caption>
+              <thead><tr><th scope="col">Speed limit</th><th scope="col" class="r">Collisions</th><th scope="col" class="r">Serious or fatal</th></tr></thead>
+              <tbody>
+                <tr><td>20 mph</td><td class="r">79,234</td><td class="r">18.4%</td></tr>
+                <tr><td>30 mph</td><td class="r">269,912</td><td class="r">21.7%</td></tr>
+                <tr><td>40 mph</td><td class="r">43,731</td><td class="r">25.0%</td></tr>
+                <tr><td>50 mph</td><td class="r">21,836</td><td class="r">27.5%</td></tr>
+                <tr><td>60 mph</td><td class="r">61,402</td><td class="r">33.8%</td></tr>
+                <tr><td>70 mph</td><td class="r">27,345</td><td class="r">24.4%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 3. road type -->
+        <section class="rc-story" aria-labelledby="d-q3">
+          <div class="rc-story-t">
+            <h2 id="d-q3">Severity rate by road type</h2>
+            <p class="rc-takeaway">Single carriageways have the highest recorded rate, at 25.0%.</p>
+            <p class="sm t2">Collisions with no recorded road type have the lowest rate (8.6%). That more likely reflects less detailed reporting than safer roads.</p>
+            <button class="rc-link-btn" type="button" aria-expanded="false" style="align-self:flex-start">View data table</button>
+          </div>
+          <figure style="margin:0;max-width:760px;display:flex;flex-direction:column;gap:4px" role="img" aria-label="Bar chart of serious or fatal rate by road type: single carriageway 25.0%, dual carriageway 22.2%, slip road 17.2%, one-way street 16.7%, roundabout 16.5%, information unavailable 8.6%.">
+            <sc-for list="{{ road }}" as="r" hint-placeholder-count="6">
+              <div class="rc-hbar">
+                <span class="rc-hbar-l">{{ r.label }}</span>
+                <div class="rc-hbar-a">
+                  <div class="rc-ref" style="left:58.25%"></div>
+                  <div class="rc-hbar-b {{ r.cls }}" style="width:{{ r.w }};background:{{ r.c }}"></div>
+                  <span class="rc-hbar-v" style="position:relative;background:#fff;padding-right:4px">{{ r.v }} <span>· {{ r.n }}</span></span>
+                </div>
+              </div>
+            </sc-for>
+            <div class="rc-chart-foot" style="padding-left:216px"><span style="display:flex;align-items:center;gap:6px"><span class="rc-glyph-dash"></span>Dataset baseline 23.3%</span><span style="display:flex;align-items:center;gap:6px"><span class="rc-hatch" style="width:16px;height:12px;border-radius:2px"></span>Not recorded</span><span>Axis 0–40%</span></div>
+          </figure>
+        </section>
+
+        <!-- 4. urban / rural -->
+        <section class="rc-story" aria-labelledby="d-q4">
+          <div class="rc-story-t">
+            <h2 id="d-q4">Urban and rural areas</h2>
+            <p class="rc-takeaway">Rural collisions were recorded as serious or fatal at 28.8%, compared with 20.7% in urban areas.</p>
+            <p class="sm t2">Rural areas account for about a third of recorded collisions.</p>
+            <button class="rc-link-btn" type="button" aria-expanded="false" style="align-self:flex-start">View data table</button>
+          </div>
+          <figure style="margin:0;max-width:760px;display:flex;flex-direction:column;gap:4px;align-self:center;width:100%" role="img" aria-label="Rural 28.8% of 163,504 collisions; urban 20.7% of 339,903 collisions.">
+            <sc-for list="{{ area }}" as="r" hint-placeholder-count="2">
+              <div class="rc-hbar" style="min-height:44px">
+                <span class="rc-hbar-l">{{ r.label }}</span>
+                <div class="rc-hbar-a">
+                  <div class="rc-ref" style="left:58.25%"></div>
+                  <div class="rc-hbar-b" style="height:28px;width:{{ r.w }};background:{{ r.c }}"></div>
+                  <span class="rc-hbar-v" style="position:relative;background:#fff;padding-right:4px">{{ r.v }} <span>· {{ r.n }}</span></span>
+                </div>
+              </div>
+            </sc-for>
+          </figure>
+        </section>
+
+        <!-- 5. lighting -->
+        <section class="rc-story" aria-labelledby="d-q5">
+          <div class="rc-story-t">
+            <h2 id="d-q5">Lighting conditions</h2>
+            <p class="rc-takeaway">Darkness without street lighting has the highest recorded rate, at 34.2%.</p>
+            <p class="sm t2">Unlit roads are more common in rural, higher-speed settings, so this likely overlaps with the patterns above rather than being a separate effect.</p>
+            <button class="rc-link-btn" type="button" aria-expanded="false" style="align-self:flex-start">View data table</button>
+          </div>
+          <figure style="margin:0;max-width:760px;display:flex;flex-direction:column;gap:4px" role="img" aria-label="Serious or fatal rate by lighting: dark with no street lighting 34.2%, dark with street lights unlit 28.4%, dark with street lights lit 24.3%, daylight 22.3%, dark with lighting not recorded 17.8%.">
+            <sc-for list="{{ light }}" as="r" hint-placeholder-count="5">
+              <div class="rc-hbar" style="grid-template-columns:220px minmax(0,1fr)">
+                <span class="rc-hbar-l">{{ r.label }}</span>
+                <div class="rc-hbar-a">
+                  <div class="rc-ref" style="left:58.25%"></div>
+                  <div class="rc-hbar-b {{ r.cls }}" style="width:{{ r.w }};background:{{ r.c }}"></div>
+                  <span class="rc-hbar-v" style="position:relative;background:#fff;padding-right:4px">{{ r.v }} <span>· {{ r.n }}</span></span>
+                </div>
+              </div>
+            </sc-for>
+          </figure>
+        </section>
+
+        <div style="border-top:1px solid #E1E5EA;padding-top:20px;display:flex;justify-content:space-between;align-items:center">
+          <p class="xs mut">Source: Department for Transport, STATS19 road collision data, Great Britain, 2020–2024.</p>
+          <button class="rc-link-btn" type="button">About the data</button>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= INSIGHTS — DESKTOP ======================= -->
+<section class="cv-sec">
+  <h2 class="cv-sec-h"><span class="cv-id">I</span>Model insights — desktop, 1440px</h2>
+  <p class="cv-sec-p">Leads with the conclusion in one sentence, then the evidence. Feature-importance values are from graphs/shap_feature_importance.png; beeswarm dot positions are illustrative and should be plotted from app/shap_sample.pkl.</p>
+  <div class="cv-item">
+    <div class="cv-lbl"><span class="cv-id">I1</span>How the model works</div>
+    <div class="frame frame-d rc">
+      <header class="rc-hd">
+        <div class="rc-hd-top">
+          <div class="rc-brand">
+            <a class="rc-wordmark" href="#"><span class="rc-mark"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5.5 14.5L7 1.5M10.5 14.5L9 1.5"/><path d="M8 4v1.6M8 8.2v1.6M8 12.4V14" stroke-width="1.2"/></svg></span>RoadCast</a>
+            <p class="rc-tag">Explore how recorded road and environmental conditions relate to collision severity.</p>
+          </div>
+          <button class="rc-btn rc-btn-ghost rc-btn-sm" type="button"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.3v3.8" stroke-linecap="round"/><circle cx="8" cy="5" r=".5" fill="currentColor"/></svg>About the model</button>
+        </div>
+        <nav class="rc-nav" aria-label="Primary">
+          <a class="rc-tab" href="#">Predict</a>
+          <a class="rc-tab" href="#">Data</a>
+          <a class="rc-tab" href="#" aria-current="page">Model insights</a>
+        </nav>
+      </header>
+
+      <main style="padding:48px 80px 96px;display:flex;flex-direction:column">
+        <div style="display:flex;flex-direction:column;gap:8px;max-width:720px;margin-bottom:36px">
+          <h1>How the model works</h1>
+          <p class="t2" style="font-size:16px;line-height:25px">Understand which recorded features have the greatest influence on the model’s estimates.</p>
+        </div>
+        <div style="border-top:1px solid #16181D;padding:24px 0 40px;display:grid;grid-template-columns:340px minmax(0,1fr);gap:64px">
+          <p class="xs t2" style="font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding-top:6px">Key finding</p>
+          <div style="display:flex;flex-direction:column;gap:10px;max-width:760px">
+            <p style="font-size:26px;line-height:36px;font-weight:500;letter-spacing:-0.015em">Road structure, speed, and rural location influence the model more strongly than weather.</p>
+            <p class="t2">No weather category appears among the 20 most influential features.</p>
+          </div>
+        </div>
+
+        <!-- importance -->
+        <section class="rc-story" aria-labelledby="i-q1">
+          <div class="rc-story-t">
+            <h2 id="i-q1">Feature importance</h2>
+            <p class="rc-takeaway">Single-carriageway roads, the speed limit and rural location are the three strongest influences.</p>
+            <p class="sm t2">Each value is the average size of a feature’s influence on the model output across 5,000 evaluation collisions, regardless of direction.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;max-width:760px">
+            <figure style="margin:0;display:flex;flex-direction:column;gap:2px" role="img" aria-label="Top 10 features by average influence: single-carriageway road type 0.107, speed limit 0.105, rural area 0.094, time of day 0.077, trunk road 0.069, special conditions none 0.058, month 0.053, junction control stop sign 0.045, second road no junction 0.042, dark with street lights lit 0.041.">
+              <sc-for list="{{ imp }}" as="i" hint-placeholder-count="10">
+                <div class="rc-hbar" style="grid-template-columns:260px minmax(0,1fr);min-height:34px">
+                  <span class="rc-hbar-l">{{ i.label }}</span>
+                  <div class="rc-hbar-a"><div class="rc-hbar-b" style="height:16px;width:{{ i.w }};background:{{ i.c }}"></div><span class="rc-hbar-v">{{ i.v }}</span></div>
+                </div>
+              </sc-for>
+            </figure>
+            <div class="rc-chart-foot" style="padding-left:276px;margin-top:6px"><span style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:12px;border-radius:2px;background:#3A55D0"></span>Named in the key finding</span><span>Average influence, mean |SHAP| in log-odds</span></div>
+            <div style="padding-left:276px;margin-top:10px"><button class="rc-btn rc-btn-secondary rc-btn-sm" type="button">Show all 83 features</button></div>
+          </div>
+        </section>
+
+        <!-- direction -->
+        <section class="rc-story" aria-labelledby="i-q2">
+          <div class="rc-story-t">
+            <h2 id="i-q2">Direction of effect</h2>
+            <p class="rc-takeaway">Importance says how much a feature matters. This chart shows which way it pushes.</p>
+            <p class="sm t2">Each dot is one evaluation collision. Its horizontal position is how far that feature moved the estimate; its shade is the feature’s value in that collision.</p>
+            <div style="border:1px solid #E1E5EA;border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;margin-top:6px">
+              <h3 style="font-size:15px;line-height:22px">Reading one feature: speed limit</h3>
+              <p class="sm t2">Dark dots (high speed limits) sit right of the centre line, so higher recorded limits pushed estimates higher. Light dots (20–30 mph) sit to the left and pushed estimates lower.</p>
+            </div>
+          </div>
+          <figure style="margin:0;max-width:760px;display:flex;flex-direction:column" role="img" aria-label="Beeswarm chart of SHAP values for the top 10 features. For speed limit, rural area, single carriageway and trunk road, high feature values push estimates higher. For time of day and special conditions none, high values push estimates lower.">
+            <div style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:12px;margin-bottom:8px">
+              <span></span>
+              <div class="sm" style="display:flex;justify-content:space-between;font-weight:600"><span>← Pushes estimate lower</span><span>Pushes estimate higher →</span></div>
+            </div>
+            <sc-for list="{{ bees }}" as="b" hint-placeholder-count="10">
+              <div style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:12px;align-items:center;height:34px">
+                <span class="sm" style="text-align:right">{{ b.label }}</span>
+                <div style="position:relative;height:100%;border-bottom:1px solid #F0F2F5">
+                  <div style="position:absolute;left:50%;top:0;bottom:-1px;border-left:1px solid #9AA2AE"></div>
+                  <sc-for list="{{ b.dots }}" as="d" hint-placeholder-count="0">
+                    <div style="position:absolute;width:6px;height:6px;border-radius:50%;left:{{ d.x }};top:{{ d.y }};background:{{ d.c }}"></div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+            <div style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:12px;margin-top:6px">
+              <span></span>
+              <div class="xs t2 num" style="display:flex;justify-content:space-between"><span>−0.3</span><span>0</span><span>+0.3</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:12px;margin-top:14px">
+              <span></span>
+              <div class="xs t2" style="display:flex;align-items:center;gap:10px;justify-content:center"><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:#C8CED7;box-shadow:inset 0 0 0 1px #9AA2AE"></span>Low feature value</span><span style="width:96px;height:8px;border-radius:4px;background:linear-gradient(to right,#C8CED7,#3A55D0)"></span><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:#3A55D0"></span>High feature value</span></div>
+            </div>
+          </figure>
+        </section>
+
+        <div class="rc-disc" style="margin-bottom:8px">
+          <button class="rc-disc-btn" type="button" aria-expanded="true">How to read these charts<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg)" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+          <div class="rc-disc-body"><p class="t2" style="max-width:780px">SHAP shows how recorded features influenced this model’s output across the evaluation sample. It explains model behaviour, not real-world causation. Strong effects for missing or unknown categories may indicate patterns in data collection rather than genuine safety effects.</p></div>
+        </div>
+
+        <!-- model information -->
+        <section class="rc-story" aria-labelledby="i-q3" style="border-top:0">
+          <div class="rc-story-t">
+            <h2 id="i-q3">Model information</h2>
+            <p class="sm t2">Figures come from the held-out evaluation set and are loaded from the model bundle, so they stay in step with the deployed model.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:24px;max-width:760px">
+            <dl style="margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:40px">
+              <sc-for list="{{ info }}" as="m" hint-placeholder-count="8">
+                <div style="display:flex;flex-direction:column;gap:2px;padding:12px 0;border-bottom:1px solid #E1E5EA">
+                  <dt class="sm t2">{{ m.k }}</dt>
+                  <dd style="margin:0;font-weight:600" class="num">{{ m.v }}</dd>
+                </div>
+              </sc-for>
+            </dl>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <h3>What calibrated means</h3>
+              <p class="t2">When the model predicts approximately 30%, about 30% of comparable cases in the evaluation data had a serious or fatal outcome.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <h3>Why the alert threshold is 22.5%</h3>
+              <p class="t2">Chosen to catch as many serious or fatal collisions as possible while keeping precision at or above 30% on the evaluation set. It currently sits just below the 23.3% baseline, so an estimate can be above the threshold while still close to the average collision.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= MOBILE + DIALOG ======================= -->
+<section class="cv-sec">
+  <h2 class="cv-sec-h"><span class="cv-id">X</span>Data on mobile, and the About the data disclosure</h2>
+  <p class="cv-sec-p">On a phone the story rows stack and every chart becomes horizontal bars so long category labels never clip. About the data opens as a dialog on desktop (st.dialog) and a full-height sheet on mobile.</p>
+  <div class="cv-row">
+
+    <div class="cv-item">
+      <div class="cv-lbl"><span class="cv-id">D2</span>Data — mobile, 390px (full scroll)</div>
+      <div class="frame frame-m rc">
+        <header class="rc-m-hd">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <a class="rc-wordmark" href="#" style="font-size:18px"><span class="rc-mark"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5.5 14.5L7 1.5M10.5 14.5L9 1.5"/><path d="M8 4v1.6M8 8.2v1.6M8 12.4V14" stroke-width="1.2"/></svg></span>RoadCast</a>
+            <button class="rc-icon-btn" type="button" aria-label="About the model"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.3v3.8" stroke-linecap="round"/><circle cx="8" cy="5" r=".5" fill="currentColor"/></svg></button>
+          </div>
+          <nav class="rc-m-nav" aria-label="Primary">
+            <a class="rc-tab" href="#">Predict</a>
+            <a class="rc-tab" href="#" aria-current="page">Data</a>
+            <a class="rc-tab" href="#">Insights</a>
+          </nav>
+        </header>
+        <main class="rc-m-main" style="display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <h1 style="font-size:24px;line-height:32px">Understand the data</h1>
+            <p class="sm t2">Explore the police-reported collision records used to train and evaluate the model.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid #E1E5EA">
+            <div style="padding:14px 12px 14px 0;border-bottom:1px solid #E1E5EA"><div class="rc-stat-v" style="font-size:24px;line-height:32px">503,475</div><div class="xs t2">Raw collision records</div></div>
+            <div style="padding:14px 0 14px 14px;border-bottom:1px solid #E1E5EA;border-left:1px solid #E1E5EA"><div class="rc-stat-v" style="font-size:24px;line-height:32px">23.3%</div><div class="xs t2">Serious or fatal</div></div>
+            <div style="padding:14px 12px 14px 0;border-bottom:1px solid #E1E5EA"><div class="rc-stat-v" style="font-size:24px;line-height:32px">2020–24</div><div class="xs t2">Coverage, Great Britain</div></div>
+            <div style="padding:14px 0 14px 14px;border-bottom:1px solid #E1E5EA;border-left:1px solid #E1E5EA"><div class="rc-stat-v" style="font-size:24px;line-height:32px;color:#4F5663">503,022</div><div class="xs t2">Cleaned modelling records</div></div>
+          </div>
+          <p class="xs t2">These figures describe police-reported collisions. Missing or unknown values may partly reflect reporting practices.</p>
+
+          <section style="display:flex;flex-direction:column;gap:10px;border-top:1px solid #E1E5EA;padding-top:22px">
+            <h2 style="font-size:19px;line-height:26px">Severity rate by speed limit</h2>
+            <p>The recorded rate rises with the speed limit, peaking at 33.8% on 60 mph roads.</p>
+            <figure style="margin:6px 0 0;display:flex;flex-direction:column;gap:2px" role="img" aria-label="Serious or fatal rate by speed limit: 20 mph 18.4%, 30 mph 21.7%, 40 mph 25.0%, 50 mph 27.5%, 60 mph 33.8%, 70 mph 24.4%.">
+              <sc-for list="{{ speed }}" as="s" hint-placeholder-count="6">
+                <div class="rc-hbar" style="grid-template-columns:56px minmax(0,1fr);gap:10px;min-height:34px">
+                  <span class="rc-hbar-l">{{ s.label }}</span>
+                  <div class="rc-hbar-a"><div class="rc-ref" style="left:58.25%"></div><div class="rc-hbar-b" style="height:18px;width:{{ s.mw }};background:{{ s.c }}"></div><span class="rc-hbar-v" style="position:relative;background:#fff;padding-right:2px">{{ s.v }}</span></div>
+                </div>
+              </sc-for>
+              <div class="rc-chart-foot" style="padding-left:66px;margin-top:6px"><span style="display:flex;align-items:center;gap:6px"><span class="rc-glyph-dash"></span>Baseline 23.3%</span></div>
+            </figure>
+            <button class="rc-link-btn" type="button" style="align-self:flex-start">View data table</button>
+          </section>
+
+          <section style="display:flex;flex-direction:column;gap:10px;border-top:1px solid #E1E5EA;padding-top:22px">
+            <h2 style="font-size:19px;line-height:26px">Severity rate by road type</h2>
+            <p>Single carriageways have the highest recorded rate, at 25.0%.</p>
+            <figure style="margin:6px 0 0;display:flex;flex-direction:column;gap:10px" role="img" aria-label="Serious or fatal rate by road type: single carriageway 25.0%, dual carriageway 22.2%, slip road 17.2%, one-way street 16.7%, roundabout 16.5%, information unavailable 8.6%.">
+              <sc-for list="{{ road }}" as="r" hint-placeholder-count="6">
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <div class="sm" style="display:flex;justify-content:space-between"><span>{{ r.label }}</span><b class="num">{{ r.v }}</b></div>
+                  <div style="position:relative;height:12px;background:#F1F3F5;border-radius:3px"><div class="{{ r.cls }}" style="height:100%;border-radius:3px;width:{{ r.w }};background:{{ r.c }}"></div><div class="rc-ref" style="left:58.25%;top:-3px;bottom:-3px"></div></div>
+                </div>
+              </sc-for>
+            </figure>
+            <p class="sm t2">No recorded road type has the lowest rate, likely reflecting less detailed reporting rather than safer roads.</p>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div class="cv-item">
+      <div class="cv-lbl"><span class="cv-id">A1</span>About the data — dialog, desktop</div>
+      <div class="frame rc" style="width:1040px;height:900px;position:relative;background:#fff">
+        <div style="position:absolute;inset:0;padding:28px 48px;display:flex;flex-direction:column;gap:20px" aria-hidden="true">
+          <div class="rc-skel" style="width:160px;height:24px"></div><div class="rc-skel" style="width:420px;height:14px"></div>
+          <div style="display:grid;grid-template-columns:340px 1fr;gap:48px;margin-top:40px"><div class="rc-skel" style="height:520px"></div><div class="rc-skel" style="height:420px"></div></div>
+        </div>
+        <div style="position:absolute;inset:0;background:rgba(22,24,29,.48);display:grid;place-items:center">
+          <div class="rc-dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-h">
+            <div class="rc-dialog-h"><h2 id="dlg-h">About the data</h2><button class="rc-icon-btn" type="button" aria-label="Close"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
+            <div class="rc-dialog-b">
+              <div><h3>What the data represents</h3><p class="t2">This model was trained on police-reported STATS19 collision records from Great Britain. It describes patterns in recorded collisions and should not be interpreted as representing every collision that occurred.</p></div>
+              <div><h3>Recording effects</h3><p class="t2">Most inputs describe recorded road, environmental, and time conditions. Missing or unknown values can also reflect how information was collected at the scene.</p></div>
+              <div><h3>How to interpret the result</h3><p class="t2">The percentage is a calibrated model estimate for collisions with similar recorded characteristics. It is intended for exploration and screening, not as a prediction of what will happen in an individual event.</p></div>
+              <div><h3>Association, not causation</h3><p class="t2">The explanation shows which recorded features influenced the model. It does not prove that those conditions caused a serious or fatal outcome.</p></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #E1E5EA;padding-top:12px">
+                <a class="sm" href="https://www.gov.uk/government/collections/road-accidents-and-safety-statistics" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;min-height:44px">Department for Transport guidance on road safety statistics<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3H3v10h10v-3M9 3h4v4M13 3L7.5 8.5"/></svg><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">(opens in a new tab)</span></a>
+                <button class="rc-btn rc-btn-secondary" type="button">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const ACC = '#3A55D0', NEU = '#8A919D';
+    const fmt = n => n.toLocaleString('en-GB');
+    const AX = 40;
+    const sp = [['20 mph', 18.4, 79234], ['30 mph', 21.7, 269912], ['40 mph', 25.0, 43731], ['50 mph', 27.5, 21836], ['60 mph', 33.8, 61402], ['70 mph', 24.4, 27345]];
+    const speed = sp.map(([label, v, n]) => ({ label, v: v.toFixed(1) + '%', n: fmt(n), h: (v / AX * 200).toFixed(1) + 'px', mw: (v / AX * 100).toFixed(1) + '%', c: v === 33.8 ? ACC : NEU }));
+    const bars = (list, hi) => list.map(([label, v, n, unrec]) => ({ label, v: v.toFixed(1) + '%', n: fmt(n), w: (v / AX * 100).toFixed(1) + '%', c: unrec ? 'transparent' : (label === hi ? ACC : NEU), cls: unrec ? 'rc-hatch' : '' }));
+    const road = bars([['Single carriageway', 25.0, 365844], ['Dual carriageway', 22.2, 74715], ['Slip road', 17.2, 8722], ['One-way street', 16.7, 11118], ['Roundabout', 16.5, 29963], ['Information unavailable', 8.6, 13113, true]], 'Single carriageway');
+    const area = bars([['Rural', 28.8, 163504], ['Urban', 20.7, 339903]], 'Rural');
+    const light = bars([['Dark – no street lighting', 34.2, 26591], ['Dark – street lights unlit', 28.4, 3671], ['Dark – street lights lit', 24.3, 104155], ['Daylight', 22.3, 359837], ['Dark – lighting not recorded', 17.8, 9202, true]], 'Dark – no street lighting');
+
+    const im = [['Road type: single carriageway', .107, 1], ['Speed limit', .105, 1], ['Rural area', .094, 1], ['Time of day', .077], ['Trunk road', .069], ['Special conditions: none', .058], ['Month', .053], ['Junction control: stop sign', .045], ['Second road: no junction', .042], ['Dark – street lights lit', .041]];
+    const imp = im.map(([label, v, k]) => ({ label, v: v.toFixed(3), w: (v / .12 * 100).toFixed(1) + '%', c: k ? ACC : NEU }));
+
+    let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const bs = [['Road type: single carriageway', .11, 1, true], ['Speed limit', .12, 1], ['Rural area', .10, 1, true], ['Time of day', .09, -1], ['Trunk road', .08, 1, true], ['Special conditions: none', .06, -1, true], ['Month', .06, 1], ['Junction control: stop sign', .05, -1, true], ['Second road: no junction', .045, 1, true], ['Dark – street lights lit', .045, 1, true]];
+    const mix = t => `color-mix(in oklab, #3A55D0 ${Math.round(t * 100)}%, #C8CED7)`;
+    const bees = bs.map(([label, mag, dir, binary]) => {
+      const dots = [];
+      for (let k = 0; k < 64; k++) {
+        const fv = binary ? (rnd() < 0.4 ? 1 : 0) : rnd();
+        let x = dir * mag * (fv - 0.45) * 2.2 + (rnd() - 0.5) * mag * 0.5;
+        x = Math.max(-0.28, Math.min(0.28, x));
+        dots.push({ x: `calc(${(50 + x / 0.3 * 50).toFixed(2)}% - 3px)`, y: (14 + (rnd() - 0.5) * 18).toFixed(1) + 'px', c: mix(fv) });
+      }
+      return { label, dots };
+    });
+
+    const info = [
+      { k: 'Model', v: 'Tuned, class-weighted XGBoost' }, { k: 'Probability calibration', v: 'Isotonic regression' },
+      { k: 'Evaluation set', v: '100,605 held-out collisions' }, { k: 'Current alert threshold', v: '22.5%' },
+      { k: 'ROC-AUC', v: '0.627' }, { k: 'PR-AUC, before calibration', v: '0.338' },
+      { k: 'Brier score', v: '0.172' }, { k: 'Average calibration gap', v: 'Under 0.5 percentage points' }
+    ];
+    return { speed, road, area, light, imp, bees, info };
+  }
+}
+</script>
+</body>
+</html>

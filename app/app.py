@@ -35,6 +35,9 @@ h4 { font-size: 20px !important; }
 .stButton > button[kind="primary"] p { font-size: 14px; font-weight: 500; }
 .stButton > button[kind="primary"]:hover { background: rgba(145,132,217,.12); color: #9184d9; border-color: #9184d9; }
 .stButton > button[kind="primary"]:active { background: rgba(145,132,217,.22); color: #9184d9; }
+/* secondary (reset) button */
+.stButton > button[kind="secondary"] { color: #9397ab; border-color: rgba(233,233,237,.16); }
+.stButton > button[kind="secondary"]:hover { color: #cfd3e5; border-color: rgba(233,233,237,.32); }
 /* tabs */
 .stTabs [data-baseweb="tab-list"] { gap: 28px; margin-top: 12px; }
 .stTabs [data-baseweb="tab"] { color: #9397ab; font-size: 14px; }
@@ -58,6 +61,19 @@ h4 { font-size: 20px !important; }
 .st-key-metric_rate [data-testid="stMetricValue"] { color: #d2cefd; }
 [class*="st-key-chart_card"] { background: #232532; }
 [data-testid="stCaptionContainer"] { font-size: 12px; }
+/* section group headers inside the inputs card */
+.field-group-label { font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase;
+    color: #75798c; margin: 18px 0 2px; }
+.field-group-label:first-child { margin-top: 0; }
+/* ADDED FOR UX PASS: keyboard focus visibility, kept distinct from hover styling */
+*:focus-visible { outline: 2px solid #9184d9 !important; outline-offset: 2px; }
+/* ADDED FOR UX PASS: expander rows used for "About this model" / assumptions */
+[data-testid="stExpander"] { border-color: rgba(233,233,237,.16) !important; }
+[data-testid="stExpander"] summary { font-size: 13px !important; color: #cfd3e5 !important; }
+/* the broad Inter override above also catches Streamlit's Material-Symbols icon glyphs
+   (expander arrows, etc.), turning them into literal text like "keyboard_arrow_right" —
+   restore the icon font specifically for those */
+[data-testid="stIconMaterial"] { font-family: 'Material Symbols Rounded' !important; }
 </style>""", unsafe_allow_html=True)
 
 # ADDED IN REDESIGN: shared colours and chart styling so every Plotly chart matches the theme
@@ -88,6 +104,22 @@ ICON_CHECK_CIRCLE = ('<svg width="15" height="15" viewBox="0 0 256 256" fill="#9
     '<path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"></path></svg>')
 ICON_CHART_BAR = ('<svg width="28" height="28" viewBox="0 0 256 256" fill="#75798c">'
     '<path d="M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z"></path></svg>')
+# ADDED FOR UX PASS: a neutral alert-triangle icon, used alongside text (never colour alone) for
+# "above the alert threshold" — built from primitive shapes rather than a copied icon font glyph
+ICON_ALERT_TRIANGLE = ('<svg width="15" height="15" viewBox="0 0 16 16" fill="none" style="flex:none">'
+    '<path d="M8 1.3 L15 14.3 H1 Z" stroke="#9184d9" stroke-width="1.3" stroke-linejoin="round"/>'
+    '<rect x="7.25" y="5.6" width="1.5" height="4.2" rx="0.75" fill="#9184d9"/>'
+    '<circle cx="8" cy="11.6" r="0.95" fill="#9184d9"/></svg>')
+ICON_WARNING_SMALL = ('<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex:none">'
+    '<path d="M8 1.3 L15 14.3 H1 Z" stroke="#e3b341" stroke-width="1.3" stroke-linejoin="round"/>'
+    '<rect x="7.25" y="5.6" width="1.5" height="4.2" rx="0.75" fill="#e3b341"/>'
+    '<circle cx="8" cy="11.6" r="0.95" fill="#e3b341"/></svg>')
+# ADDED FOR UX PASS: a small neutral info icon for the data-provenance note — muted colour,
+# never the sole carrier of meaning (always paired with text)
+ICON_INFO = ('<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex:none">'
+    '<circle cx="8" cy="8" r="6.7" stroke="#75798c" stroke-width="1.3"/>'
+    '<rect x="7.25" y="7" width="1.5" height="5" rx="0.75" fill="#75798c"/>'
+    '<circle cx="8" cy="4.6" r="0.95" fill="#75798c"/></svg>')
 
 # a 1px rule that fades out over 48px at each end
 FADING_RULE = ('<div style="height:1px;margin:28px 0 22px;background:linear-gradient(to right, transparent, '
@@ -111,8 +143,14 @@ def load_model():
 save_model_data, explainer = load_model()
 
 model = save_model_data["model"]
+# isotonic calibrator: maps the model's raw output onto a genuinely calibrated probability
+# (scale_pos_weight class-balancing distorts the raw score's scale — see notebook Section 19.4)
+calibrator = save_model_data["calibrator"]
 threshold = save_model_data["threshold"]
 feature_names = save_model_data["feature_names"]
+# ADDED FOR UX PASS: evaluation metadata attached to the bundle in notebook Section 22 — read
+# here rather than hard-coded, so the "About this model" panel can't drift from the real numbers
+METRICS = save_model_data.get("metrics", {})
 
 # ADDED IN STAGE 8: Readable names for the model's raw column names, used on the SHAP charts
 # (same mapping as the notebook, covering all 83 model features)
@@ -136,7 +174,7 @@ FEATURE_LABELS = {
     "road_type_3": "Road Type: Dual Carriageway",
     "road_type_6": "Road Type: Single Carriageway",
     "road_type_7": "Road Type: Slip Road",
-    "road_type_9": "Road Type: Unknown",
+    "road_type_9": "Road Type: Information unavailable",
     # junction detail (reference: Not at junction)
     "junction_detail_13": "Junction: T or Staggered",
     "junction_detail_16": "Junction: Crossroads",
@@ -144,13 +182,13 @@ FEATURE_LABELS = {
     "junction_detail_18": "Junction: Private Drive",
     "junction_detail_19": "Junction: Other Junction",
     "junction_detail_99": "Junction: Unknown",
-    # junction control (reference: -1 / data missing)
+    # junction control (reference: -1 / not at a junction)
     "junction_control_1": "Junction Control: Traffic Signal",
     "junction_control_2": "Junction Control: Stop Sign",
     "junction_control_3": "Junction Control: Give Way / Uncontrolled",
     "junction_control_4": "Junction Control: Not Controlled",
-    "junction_control_9": "Junction Control: Unknown",
-    # pedestrian crossing (reference: Zebra / pelican)
+    "junction_control_9": "Junction Control: Information unavailable",
+    # pedestrian crossing (reference: -1 / data missing — "None" is its own explicit category, code 0)
     "pedestrian_crossing_0": "Pedestrian Crossing: None",
     "pedestrian_crossing_11": "Pedestrian Crossing: Pelican / Puffin / Toucan",
     "pedestrian_crossing_12": "Pedestrian Crossing: Traffic Signal Phase",
@@ -159,12 +197,12 @@ FEATURE_LABELS = {
     "pedestrian_crossing_15": "Pedestrian Crossing: School Patrol",
     "pedestrian_crossing_16": "Pedestrian Crossing: Zig-zag Markings",
     "pedestrian_crossing_17": "Pedestrian Crossing: Other Controlled",
-    "pedestrian_crossing_99": "Pedestrian Crossing: Unknown",
+    "pedestrian_crossing_99": "Pedestrian Crossing: Information unavailable",
     # light conditions (reference: Daylight)
     "light_conditions_4": "Light: Dark - Lights Lit",
     "light_conditions_5": "Light: Dark - Lights Unlit",
     "light_conditions_6": "Light: Dark - No Lighting",
-    "light_conditions_7": "Light: Dark - Lighting Unknown",
+    "light_conditions_7": "Light: Dark - Lighting Not Recorded",
     # weather conditions (reference: Fine)
     "weather_conditions_2": "Weather: Raining",
     "weather_conditions_3": "Weather: Snowing",
@@ -173,7 +211,7 @@ FEATURE_LABELS = {
     "weather_conditions_6": "Weather: Snow / High Winds",
     "weather_conditions_7": "Weather: Fog / Mist",
     "weather_conditions_8": "Weather: Other",
-    "weather_conditions_9": "Weather: Unknown",
+    "weather_conditions_9": "Weather: Information unavailable",
     # road surface conditions (reference: Dry)
     "road_surface_conditions_2": "Road Surface: Wet / Damp",
     "road_surface_conditions_3": "Road Surface: Snow",
@@ -189,7 +227,7 @@ FEATURE_LABELS = {
     "special_conditions_at_site_5": "Special Conditions: Oil / Diesel",
     "special_conditions_at_site_6": "Special Conditions: Mud",
     "special_conditions_at_site_7": "Special Conditions: Other",
-    "special_conditions_at_site_9": "Special Conditions: Unknown",
+    "special_conditions_at_site_9": "Special Conditions: Information unavailable",
     # carriageway hazards (reference: -1 / data missing)
     "carriageway_hazards_0": "Carriageway Hazard: None",
     "carriageway_hazards_11": "Carriageway Hazard: Vehicle Load on Road",
@@ -206,7 +244,7 @@ FEATURE_LABELS = {
     "carriageway_hazards_99": "Carriageway Hazard: Not Recorded",
     # urban/rural (reference: Urban)
     "urban_or_rural_area_2": "Rural Area",
-    # trunk road (reference: -1 / data missing)
+    # trunk road (reference: -1 / not sure / not recorded)
     "trunk_road_flag_1": "Non-Trunk Road",
     "trunk_road_flag_2": "Trunk Road",
     # numeric features
@@ -216,13 +254,119 @@ FEATURE_LABELS = {
     "month": "Month",
 }
 
+# ------------------------------------------------------------------
+# ADDED FOR UX PASS — Stage 2e: plain-language grouping for the SHAP summary
+# ------------------------------------------------------------------
+
+MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
+               "July", "August", "September", "October", "November", "December"]
+DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+# ADDED FOR UX PASS: Streamlit widgets don't reliably reset just by popping their session_state
+# key — once a widget with a given key has been rendered, the browser keeps reporting its last
+# value back on every rerun, re-populating that same key before the script even runs. Suffixing
+# every scenario-input widget's key with a version number, and bumping the version on "Reset",
+# makes each reset a genuinely new widget with no browser-side history, so it actually uses its
+# coded default.
+if "form_version" not in st.session_state:
+    st.session_state.form_version = 0
+
+def fkey(name):
+    return f"{name}_{st.session_state.form_version}"
+
+# each user-facing field group: (prefix(es) of its one-hot columns, label shown when none of
+# those columns is active — i.e. the dropped reference category is in effect). Groups with no
+# reference label here always have an explicit active column (their default is set directly
+# when building the input row), so that branch is never needed for them.
+CATEGORICAL_GROUPS = [
+    ("Road Type", ("road_type_",), "Road Type: Roundabout"),
+    ("Junction Control", ("junction_control_",), "Junction Control: Not at a junction"),
+    ("Area Type", ("urban_or_rural_area_",), "Area Type: Urban"),
+    ("Lighting", ("light_conditions_",), "Lighting: Daylight"),
+    ("Weather", ("weather_conditions_",), "Weather: Fine"),
+    ("Trunk Road", ("trunk_road_flag_",), "Trunk Road: Information unavailable"),
+    ("Primary Road Class", ("first_road_class_",), "Primary Road Class: A Road"),
+    ("Special Conditions", ("special_conditions_at_site_",), "Special Conditions: None"),
+    ("Pedestrian Crossing", ("pedestrian_crossing_",), "Pedestrian Crossing: None"),
+    # fields the form never exposes at all — bucketed as one factor so their influence is never
+    # silently invisible, without inventing a specific sub-label for a combination the user didn't set
+    ("Other unrecorded road/junction details",
+     ("second_road_class_", "junction_detail_", "road_surface_conditions_", "carriageway_hazards_"),
+     "Other unrecorded road/junction details"),
+]
+NUMERIC_GROUPS = ["speed_limit", "hour", "day_of_week", "month"]
+
+def numeric_group_label(name, value):
+    if name == "speed_limit":
+        return f"Speed Limit: {int(value)} mph"
+    if name == "hour":
+        return f"Time of Day: {int(value):02d}:00"
+    if name == "day_of_week":
+        return f"Day of Week: {DAY_NAMES[int(value) % 7]}"
+    if name == "month":
+        return f"Month: {MONTH_NAMES[int(value) - 1]}"
+    return name
+
+def grouped_factors(explanation):
+    """Collapses the 83 raw SHAP columns into the ~13 fields the form actually shows, summing
+    each one-hot group's contributions into a single signed value with one readable label —
+    e.g. all eight `weather_conditions_*` columns become one "Weather: Fine" row, matching how
+    the person thinks about their own inputs rather than the model's internal encoding."""
+    values = explanation.values
+    data = explanation.data
+    name_to_idx = {name: i for i, name in enumerate(feature_names)}
+
+    rows = []
+    for name in NUMERIC_GROUPS:
+        i = name_to_idx[name]
+        rows.append((numeric_group_label(name, data[i]), float(values[i])))
+
+    for group_label, prefixes, reference_label in CATEGORICAL_GROUPS:
+        idxs = [i for i, name in enumerate(feature_names) if name.startswith(prefixes)]
+        total = float(values[idxs].sum())
+        active = [i for i in idxs if data[i] == 1]
+        if active:
+            col_name = feature_names[active[0]]
+            label = FEATURE_LABELS.get(col_name, col_name)
+        else:
+            label = reference_label
+        rows.append((label, total))
+
+    return sorted(rows, key=lambda r: -abs(r[1]))
 
 # model suceesfully loaded: visual confirmation
 st.markdown(
     '<div style="display:flex;align-items:center;gap:6px;font-size:13px;color:#9397ab;margin-top:-8px">'
-    f'{ICON_CHECK_CIRCLE}<span>Model loaded successfully! The threshold for classification is set at {threshold}.</span></div>',
+    f'{ICON_CHECK_CIRCLE}<span>Model loaded successfully! The current alert threshold is {threshold:.1%}.</span></div>',
     unsafe_allow_html=True,
 )
+
+# ------------------------------------------------------------------
+# ADDED FOR UX PASS — "About this model": evaluation numbers and what the model is/isn't for.
+# Kept as an unobtrusive, collapsed-by-default expander rather than inline text, per the brief.
+# Every figure below is read from METRICS (notebook Section 22) or the bundle's own `threshold` —
+# nothing here is a separate hard-coded copy of the model's real performance.
+# ------------------------------------------------------------------
+with st.expander("About this model"):
+    if METRICS:
+        st.markdown(
+            f"""
+- **Data coverage:** {METRICS.get('data_coverage', 'n/a')}
+- **Evaluation set:** {METRICS.get('eval_set_size', 0):,} held-out collisions, never used to fit the model or its calibration
+- **ROC-AUC:** {METRICS.get('roc_auc', float('nan')):.3f}
+- **PR-AUC (before calibration):** {METRICS.get('pr_auc_uncalibrated', float('nan')):.3f}
+- **Brier score:** {METRICS.get('brier_score', float('nan')):.3f}
+- **Average calibration gap:** under {METRICS.get('calibration_gap_pct_points', float('nan')):.1f} percentage points across the probability range
+- **Current alert threshold:** {threshold:.1%} — {METRICS.get('threshold_rationale', '')}
+- **Intended use:** {METRICS.get('intended_use', '')}
+            """.strip()
+        )
+        st.caption(
+            f"What \"calibrated\" means here: when the model predicts approximately 30%, about 30% of "
+            f"comparable cases in the evaluation data had a serious or fatal outcome. {METRICS.get('calibration_method', '')}"
+        )
+    else:
+        st.caption("Evaluation metadata was not found in the model bundle.")
 
 # --------------------------------
 # Stage 3: Creating the tabs
@@ -246,142 +390,226 @@ with tab_predict:
             # set card header
             st.markdown("#### Road & Conditions")
 
-            # two fields per row
+            # ---- Road ----
+            st.markdown('<div class="field-group-label">Road</div>', unsafe_allow_html=True)
             a, b = st.columns(2)
             with a:
-                speed_limit = st.selectbox("Speed Limit (mph)", options=[20, 30, 40, 50, 60, 70], index=1)
+                speed_limit = st.selectbox("Speed Limit (mph)", options=[20, 30, 40, 50, 60, 70],
+                                            index=1, key=fkey("scn_speed_limit"))
             with b:
+                # "Unknown" is listed last, distinct from the ordinary conditions above it, and
+                # named "Information unavailable" rather than offered as a normal scenario choice
+                # — it marks incomplete police recording, not a road condition someone would
+                # deliberately pick (see notebook Section 19.1 and the "About the data" note)
                 road_type_label = st.selectbox(
                     "Road Type",
-                    ["Roundabout", "One Way Street", "Dual Carriageway", "Single Carriageway", "Slip Road", "Unknown"],
-                    index=3
+                    ["Roundabout", "One Way Street", "Dual Carriageway", "Single Carriageway", "Slip Road",
+                     "Information unavailable"],
+                    index=3, key=fkey("scn_road_type"),
+                    help="\"Information unavailable\" applies the model's unrecorded-road-type category. "
+                         "In the training data this coincides with less detailed incident reports, which "
+                         "can lower the estimate for reasons unrelated to the road itself.",
                 )
-
             a, b = st.columns(2)
             with a:
-                urban_rural_label = st.selectbox("Area Type", ["Urban", "Rural"])
-            with b:
-                light_label = st.selectbox(
-                    "Lighting Conditions",
-                    ["Daylight", "Dark - Lights Lit", "Dark - Lights Unlit", "Dark - No Lighting", "Dark - Lighting Unknown"],
-                )
-
-            a, b = st.columns(2)
-            with a:
-                weather_label = st.selectbox(
-                    "Weather",
-                    ["Fine", "Raining", "Snowing", "Fine / High Winds", "Rain / High Winds", "Snow / High Winds", "Fog / Mist", "Other", "Unknown"],
-                )
+                area_type_label = st.selectbox("Area Type", ["Urban", "Rural"], key=fkey("scn_area_type"))
             with b:
                 junction_control_label = st.selectbox(
                     "Junction Control",
-                    ["Not at a junction / missing", "Traffic Signal", "Stop Sign", "Give Way / Uncontrolled",
-                    "Not Controlled", "Unknown"],
+                    ["Not at a junction", "Traffic Signal", "Stop Sign", "Give Way / Uncontrolled",
+                     "Not Controlled", "Information unavailable"],
+                    key=fkey("scn_junction_control"),
+                    help="\"Not at a junction\" is the model's largest category; a small share of it "
+                         "(under 2% in training data) may instead be collisions at a junction where the "
+                         "control type wasn't recorded — the data can't separate the two. \"Information "
+                         "unavailable\" is different: collisions where an officer marked junction control "
+                         "as unrecorded were about 5x less likely to be serious/fatal, likely because "
+                         "less-detailed reports tend to accompany less severe incidents — not because an "
+                         "unrecorded junction is actually safer.",
                 )
 
-            # full-width fields
+            # ---- Environment ----
+            st.markdown('<div class="field-group-label">Environment</div>', unsafe_allow_html=True)
+            a, b = st.columns(2)
+            with a:
+                light_label = st.selectbox(
+                    "Lighting Conditions",
+                    ["Daylight", "Dark - Lights Lit", "Dark - Lights Unlit", "Dark - No Lighting",
+                     "Dark - Lighting Not Recorded"],
+                    key=fkey("scn_light"),
+                    help="\"Dark - Lighting Not Recorded\" means it was dark but the lighting detail wasn't "
+                         "captured at the scene — a recording gap, not a separate lighting condition.",
+                )
+            with b:
+                weather_label = st.selectbox(
+                    "Weather",
+                    ["Fine", "Raining", "Snowing", "Fine / High Winds", "Rain / High Winds",
+                     "Snow / High Winds", "Fog / Mist", "Other", "Information unavailable"],
+                    key=fkey("scn_weather"),
+                    help="\"Information unavailable\" applies the model's unrecorded-weather category, which "
+                         "may reflect how the report was completed rather than the actual weather.",
+                )
+
+            # ---- Time ----
+            st.markdown('<div class="field-group-label">Time</div>', unsafe_allow_html=True)
             day_of_week_label = st.selectbox(
-                "Day of Week", ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+                "Day of Week", DAY_NAMES, key=fkey("scn_day_of_week"),
             )
-            hour = st.slider("Hour of the Day", 0, 23, 17)
-            month = st.slider("Month", 1, 12, 6) # a draggable slider for the month of the year
+            hour_label = st.select_slider(
+                "Time of Day", options=[f"{h:02d}:00" for h in range(24)], value="17:00", key=fkey("scn_hour"),
+            )
+            month_label = st.select_slider(
+                "Month", options=MONTH_NAMES, value="June", key=fkey("scn_month"),
+            )
+
+            # ---- Additional road details (exposes influential fields the original form left hidden) ----
+            with st.expander("Additional road details"):
+                st.caption("These influence the model but weren't in the original form — set them if you know them.")
+                a, b = st.columns(2)
+                with a:
+                    road_class_label = st.selectbox(
+                        "Primary Road Class",
+                        ["Motorway", "A(M) Road", "A Road", "B Road", "C Road", "Unclassified"],
+                        index=2, key=fkey("scn_road_class"),
+                    )
+                with b:
+                    trunk_road_label = st.selectbox(
+                        "Trunk Road?",
+                        ["Information unavailable", "Non-Trunk Road", "Trunk Road"],
+                        key=fkey("scn_trunk_road"),
+                        help="\"Information unavailable\" is this field's own default — most collisions in "
+                             "the training data don't have a trunk-road flag recorded.",
+                    )
+                special_conditions_label = st.selectbox(
+                    "Special Conditions at Site",
+                    ["None", "Automatic Signal Out", "Automatic Signal Defective", "Roadworks",
+                     "Road Surface Defective", "Oil / Diesel Spillage", "Mud on Road", "Other",
+                     "Information unavailable"],
+                    key=fkey("scn_special_conditions"),
+                    help="\"Information unavailable\" applies the model's unrecorded category for this "
+                         "field, distinct from \"None\" (no special conditions were present).",
+                )
+                pedestrian_crossing_label = st.selectbox(
+                    "Pedestrian Crossing Nearby",
+                    ["None nearby", "Pelican / Puffin / Toucan", "Traffic Signal Phase",
+                     "Footbridge / Subway", "Central Refuge", "School Patrol", "Zig-zag Markings",
+                     "Other Controlled Crossing", "Information unavailable"],
+                    key=fkey("scn_pedestrian_crossing"),
+                    help="\"Information unavailable\" is different from \"None nearby\": collisions where "
+                         "the crossing type was marked unrecorded were about 5x less likely to be "
+                         "serious/fatal in the training data, likely a recording pattern rather than a "
+                         "genuinely safer condition.",
+                )
 
             # ------------------------------------------------
-            # Stage 5: The predict button and the prediction output
+            # Stage 5: The predict / reset buttons
             # ------------------------------------------------
+            btn_predict, btn_reset = st.columns([0.65, 0.35])
+            with btn_predict:
+                predict_clicked = st.button("Predict Severity Risk", type="primary", use_container_width=True)
+            with btn_reset:
+                reset_clicked = st.button("Reset", type="secondary", use_container_width=True,
+                                           help="Clear all fields back to their defaults")
 
-            # create a button to trigger the prediction
-            predict_clicked = st.button("Predict Severity Risk", type="primary", use_container_width=True)
+        # fields not shown above still feed the model — disclosed here rather than left implicit
+        with st.expander("Model assumptions for fields not shown above"):
+            st.caption(
+                "The model has more inputs than this form exposes. Fields below keep the dataset's "
+                "most common value unless noted, so every estimate uses a complete, documented row — "
+                "never information you entered."
+            )
+            st.markdown(
+                "- **Junction layout** (e.g. crossroads, T-junction): assumed **not at a junction** "
+                "(the most common case, ~50% of training records) regardless of your Junction Control "
+                "choice above — a known gap, since picking \"Stop Sign\" doesn't change this field.\n"
+                "- **Second road's class** (the road crossing at a junction): assumed **not applicable** "
+                "— a small, less common category (~2%) kept for consistency with how the model was trained.\n"
+                "- **Road surface condition** (dry/wet/icy/flooded): assumed **dry** (the most common case, "
+                "~72% of training records).\n"
+                "- **Carriageway hazards** (e.g. an obstruction or animal in the road): assumed **none** "
+                "(~93% of training records)."
+            )
+
+    # ------------------------------------------------------------------
+    # ADDED FOR UX PASS — Stage 5b: resolve every widget's current code, every run, so a
+    # staleness check can compare "what's on screen" to "what the last prediction used" even on
+    # a run where Predict wasn't clicked.
+    # ------------------------------------------------------------------
+
+    # road type — "Information unavailable" maps to the model's own unrecorded-road-type column
+    _ROAD_TYPE_CODES = {"Roundabout": 1, "One Way Street": 2, "Dual Carriageway": 3,
+                         "Single Carriageway": 6, "Slip Road": 7, "Information unavailable": 9}
+    road_type_code = _ROAD_TYPE_CODES[road_type_label]
+
+    # area type
+    area_type_code = 1 if area_type_label == "Urban" else 2
+
+    # lighting conditions — "Dark - Lighting Not Recorded" maps to the model's own unrecorded
+    # lighting-detail column (still "dark", just without the specific lit/unlit/none detail)
+    _LIGHT_CODES = {"Daylight": 1, "Dark - Lights Lit": 4, "Dark - Lights Unlit": 5,
+                     "Dark - No Lighting": 6, "Dark - Lighting Not Recorded": 7}
+    light_code = _LIGHT_CODES[light_label]
+
+    # weather conditions — "Information unavailable" maps to the model's own unrecorded-weather column
+    _WEATHER_CODES = {"Fine": 1, "Raining": 2, "Snowing": 3, "Fine / High Winds": 4,
+                       "Rain / High Winds": 5, "Snow / High Winds": 6, "Fog / Mist": 7, "Other": 8,
+                       "Information unavailable": 9}
+    weather_code = _WEATHER_CODES[weather_label]
+
+    # junction control — "Not at a junction" is the model's dropped reference category (-1),
+    # not a placeholder for missing data (notebook Section 19 confirms ~99% of -1 rows are
+    # genuinely away from a junction, not unrecorded). "Information unavailable" is a distinct,
+    # explicit "unrecorded" column (code 9) — see the help text on the widget above.
+    _JUNCTION_CONTROL_CODES = {"Not at a junction": -1, "Traffic Signal": 1, "Stop Sign": 2,
+                                "Give Way / Uncontrolled": 3, "Not Controlled": 4,
+                                "Information unavailable": 9}
+    junction_control_code = _JUNCTION_CONTROL_CODES[junction_control_label]
+
+    # day of week
+    day_of_week_code = DAY_NAMES.index(day_of_week_label)
+
+    # time of day / month, from the labelled sliders
+    hour = int(hour_label.split(":")[0])
+    month = MONTH_NAMES.index(month_label) + 1
+
+    # additional road details
+    _ROAD_CLASS_CODES = {"Motorway": 1, "A(M) Road": 2, "A Road": 3, "B Road": 4, "C Road": 5, "Unclassified": 6}
+    road_class_code = _ROAD_CLASS_CODES[road_class_label]
+
+    _TRUNK_ROAD_CODES = {"Information unavailable": -1, "Non-Trunk Road": 1, "Trunk Road": 2}
+    trunk_road_code = _TRUNK_ROAD_CODES[trunk_road_label]
+
+    _SPECIAL_CONDITIONS_CODES = {"None": 0, "Automatic Signal Out": 1, "Automatic Signal Defective": 2,
+                                  "Roadworks": 3, "Road Surface Defective": 4, "Oil / Diesel Spillage": 5,
+                                  "Mud on Road": 6, "Other": 7, "Information unavailable": 9}
+    special_conditions_code = _SPECIAL_CONDITIONS_CODES[special_conditions_label]
+
+    _PEDESTRIAN_CROSSING_CODES = {"None nearby": 0, "Pelican / Puffin / Toucan": 11,
+                                   "Traffic Signal Phase": 12, "Footbridge / Subway": 13,
+                                   "Central Refuge": 14, "School Patrol": 15, "Zig-zag Markings": 16,
+                                   "Other Controlled Crossing": 17, "Information unavailable": 99}
+    pedestrian_crossing_code = _PEDESTRIAN_CROSSING_CODES[pedestrian_crossing_label]
+
+    # a snapshot of every input that feeds the model, used to detect "the scenario changed since
+    # the last prediction" regardless of which widget changed
+    current_signature = (
+        speed_limit, road_type_code, area_type_code, light_code, weather_code, junction_control_code,
+        day_of_week_code, hour, month, road_class_code, trunk_road_code, special_conditions_code,
+        pedestrian_crossing_code,
+    )
+
+    if reset_clicked:
+        # bump the key version so every scenario widget is recreated fresh next run (see fkey
+        # above) — the old, now-orphaned "scn_*_<old version>" keys are simply never read again
+        st.session_state.form_version += 1
+        st.session_state.pop("result", None)
+        st.rerun()
 
     if predict_clicked:
 
-        # map the user input to the corresponding codes
-
-        # road type
-        if road_type_label == "Roundabout":
-            road_type_code = 1
-        elif road_type_label == "One Way Street":
-            road_type_code = 2
-        elif road_type_label == "Dual Carriageway":
-            road_type_code = 3
-        elif road_type_label == "Single Carriageway":
-            road_type_code = 6
-        elif road_type_label == "Slip Road":
-            road_type_code = 7
-        else:
-            road_type_code = 9
-
-        # urban/rural area
-        if urban_rural_label == "Urban":
-            urban_rural_code = 1
-        else:
-            urban_rural_code = 2
-
-        # lighting conditions
-        if light_label == "Daylight":
-            light_code = 1
-        elif light_label == "Dark - Lights Lit":
-            light_code = 4
-        elif light_label == "Dark - Lights Unlit":
-            light_code = 5
-        elif light_label == "Dark - No Lighting":
-            light_code = 6
-        else:
-            light_code = 7
-
-        # weather conditions
-        if weather_label == "Fine":
-            weather_code = 1
-        elif weather_label == "Raining":
-            weather_code = 2
-        elif weather_label == "Snowing":
-            weather_code = 3
-        elif weather_label == "Fine / High Winds":
-            weather_code = 4
-        elif weather_label == "Rain / High Winds":
-            weather_code = 5
-        elif weather_label == "Snow / High Winds":
-            weather_code = 6
-        elif weather_label == "Fog / Mist":
-            weather_code = 7
-        elif weather_label == "Other":
-            weather_code = 8
-        else:
-            weather_code = 9
-
-        # junction control
-        if junction_control_label == "Not at a junction / missing":
-            junction_control_code = -1
-        elif junction_control_label == "Traffic Signal":
-            junction_control_code = 1
-        elif junction_control_label == "Stop Sign":
-            junction_control_code = 2
-        elif junction_control_label == "Give Way / Uncontrolled":
-            junction_control_code = 3
-        elif junction_control_label == "Not Controlled":
-            junction_control_code = 4
-        else:
-            junction_control_code = 9
-
-        # day of week
-        if day_of_week_label == "Sunday":
-            day_of_week_code = 0
-        elif day_of_week_label == "Monday":
-            day_of_week_code = 1
-        elif day_of_week_label == "Tuesday":
-            day_of_week_code = 2
-        elif day_of_week_label == "Wednesday":
-            day_of_week_code = 3
-        elif day_of_week_label == "Thursday":
-            day_of_week_code = 4
-        elif day_of_week_label == "Friday":
-            day_of_week_code = 5
-        else:
-            day_of_week_code = 6
-
-    # ------------------------------------------------
-    # Stage 6: Building the model's input
-    # ------------------------------------------------
+        # ------------------------------------------------
+        # Stage 6: Building the model's input
+        # ------------------------------------------------
 
         # create a DataFrame with the same structure as the training data
         input_row = pd.DataFrame(0, index=[0], columns=feature_names)
@@ -392,78 +620,165 @@ with tab_predict:
         input_row["day_of_week"] = day_of_week_code
         input_row["month"] = month
 
-        # populate with one-hot encoded values for categorical features
-        road_type_column = "road_type_" + str(road_type_code)
-        if road_type_column in input_row.columns:
-            input_row[road_type_column] = 1
+        # populate with one-hot encoded values for categorical features — each `if ... in
+        # input_row.columns` guard is what makes picking the model's dropped reference category
+        # (e.g. "Not at a junction") a no-op: no column exists for it, so the row is left at 0
+        # for that whole group, which is exactly what the reference category means
+        for column, code in [
+            ("road_type_", road_type_code),
+            ("urban_or_rural_area_", area_type_code),
+            ("light_conditions_", light_code),
+            ("weather_conditions_", weather_code),
+            ("junction_control_", junction_control_code),
+            ("first_road_class_", road_class_code),
+            ("trunk_road_flag_", trunk_road_code),
+            ("special_conditions_at_site_", special_conditions_code),
+            ("pedestrian_crossing_", pedestrian_crossing_code),
+        ]:
+            col = f"{column}{code}"
+            if col in input_row.columns:
+                input_row[col] = 1
 
-        urban_rural_column = "urban_or_rural_area_" + str(urban_rural_code)
-        if urban_rural_column in input_row.columns:
-            input_row[urban_rural_column] = 1
+        # ------------------------------------------------
+        # Stage 7: Make the prediction and keep the result
+        # ------------------------------------------------
 
-        light_column = "light_conditions_" + str(light_code)
-        if light_column in input_row.columns:
-            input_row[light_column] = 1
-
-        weather_column = "weather_conditions_" + str(weather_code)
-        if weather_column in input_row.columns:
-            input_row[weather_column] = 1
-
-        junction_column = "junction_control_" + str(junction_control_code)
-        if junction_column in input_row.columns:
-            input_row[junction_column] = 1
-
-    # ------------------------------------------------
-    # Stage 7: Make the prediction and keep the result
-    # ------------------------------------------------
-
-        # make the prediction using the trained model
+        # make the prediction using the trained model, then map its raw output onto a
+        # calibrated probability exactly once (the raw score's scale is distorted by
+        # class-weighting — see notebook Section 19.4). Nothing downstream recomputes this.
         prediction = model.predict_proba(input_row)
-        probability = prediction[0][1]
+        probability = float(calibrator.predict([prediction[0][1]])[0])
 
         # calculate SHAP values for the input row
         shap_values = explainer(input_row)
 
-        # keep the result in session state so it survives reruns and the right column can show an empty state
-        st.session_state["result"] = {"probability": probability, "shap": shap_values[0]}
+        # keep the result in session state so it survives reruns and the right column can show an
+        # empty state; input_signature lets a later rerun detect that the scenario has moved on
+        st.session_state["result"] = {
+            "probability": probability,
+            "shap": shap_values[0],
+            "input_signature": current_signature,
+        }
 
     # ------------------------------------------------
-    # Stage 8: The result and the SHAP waterfall chart
+    # Stage 8: The result, plain-language factors, and the detailed SHAP waterfall
     # ------------------------------------------------
 
     # READ: Readable labels dictionary added to 'explainer = shap.TreeExplainer(model)' in Stage 2
 
-    # big percentage and risk tag for a prediction
-    def result_html(p, t):
-        hi = p >= t
+    # big percentage and threshold-status tag for a prediction — reframed per the UX pass:
+    # neutral "above/below the alert threshold" language instead of "HIGH RISK"/"LOWER RISK",
+    # the dataset baseline shown for context, and an explicit note that the threshold is a
+    # precision/recall trade-off, not a safety boundary
+    def result_html(p, t, dataset_prevalence):
+        above = p >= t
         d = abs(p - t) * 100
-        num_style = "color:#d2cefd;text-shadow:0 0 40px rgba(145,132,217,.35)" if hi else "color:#e4e7f5"
-        tag = ('<span style="border:1px solid #9184d9;color:#9184d9;padding:4px 12px;border-radius:6px;font-size:12px;letter-spacing:.08em">HIGH RISK</span>' if hi
-               else '<span style="background:#3f424d;color:#f3f5fe;padding:4px 12px;border-radius:6px;font-size:12px;letter-spacing:.08em">LOWER RISK</span>')
-        word = "above" if hi else "below"
+        num_style = "color:#d2cefd;text-shadow:0 0 40px rgba(145,132,217,.35)" if above else "color:#e4e7f5"
+        icon = ICON_ALERT_TRIANGLE if above else ICON_CHECK_CIRCLE
+        tag_text = "ABOVE ALERT THRESHOLD" if above else "BELOW ALERT THRESHOLD"
+        tag_style = ("border:1px solid #9184d9;color:#9184d9" if above
+                     else "background:#3f424d;color:#f3f5fe")
+        word = "above" if above else "below"
+        baseline_html = ""
+        if dataset_prevalence is not None:
+            baseline_html = (
+                f'<div style="font-size:13px;color:#9397ab;margin-top:10px">'
+                f'Dataset average: {dataset_prevalence:.1%}</div>'
+            )
         return (
-            '<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9184d9">Probability of Serious/Fatal Outcome</div>'
+            '<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9184d9">'
+            'Estimated Probability of a Serious or Fatal Outcome</div>'
             f'<div style="font-size:112px;line-height:.95;font-weight:500;letter-spacing:-.045em;margin:14px 0 18px;{num_style}">{p*100:.1f}%</div>'
-            f'<div style="display:flex;gap:10px;align-items:center">{tag}<span style="font-size:14px;color:#cfd3e5">{d:.1f} points {word} the {t:.1%} decision threshold</span></div>'
+            f'<div style="display:flex;gap:8px;align-items:center">'
+            f'<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:6px;'
+            f'font-size:12px;letter-spacing:.08em;{tag_style}">{icon}{tag_text}</span>'
+            f'<span style="font-size:14px;color:#cfd3e5">{d:.1f} points {word} the {t:.1%} alert threshold</span></div>'
+            + baseline_html +
+            '<div style="font-size:12px;color:#75798c;margin-top:10px;max-width:520px">'
+            "The alert threshold reflects the model's chosen precision&ndash;recall trade-off; it is not a "
+            "boundary between safe and dangerous conditions. This is a statistical estimate from historical "
+            "patterns, not a determination of what will happen in any individual collision.</div>"
         )
 
     # the same block before Predict has been pressed
-    def empty_result_html(t):
+    def empty_result_html(t, dataset_prevalence):
+        baseline_html = ""
+        if dataset_prevalence is not None:
+            baseline_html = (
+                f'<div style="font-size:13px;color:#9397ab;margin-top:10px">'
+                f'Dataset average: {dataset_prevalence:.1%}</div>'
+            )
         return (
-            '<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9184d9">Probability of Serious/Fatal Outcome</div>'
+            '<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#9184d9">'
+            'Estimated Probability of a Serious or Fatal Outcome</div>'
             '<div style="font-size:112px;line-height:.95;font-weight:500;letter-spacing:-.045em;margin:14px 0 18px;color:#3f424d">&mdash;%</div>'
             '<div style="display:flex;gap:10px;align-items:center">'
-            '<span style="border:1px dashed #595d6c;color:#9397ab;padding:4px 12px;border-radius:6px;font-size:12px;letter-spacing:.08em">NO PREDICTION YET</span>'
-            f'<span style="font-size:14px;color:#9397ab">Decision threshold: {t:.1%}</span></div>'
-            + FADING_RULE +
-            '<div style="border:1px dashed #3f424d;border-radius:8px;min-height:260px;padding:28px 32px;display:flex;flex-direction:column;justify-content:center;gap:8px">'
-            f'<div>{ICON_CHART_BAR}</div>'
-            '<div style="font-size:20px;font-weight:500;color:#cfd3e5">Why This Prediction?</div>'
-            '<div style="font-size:13px;color:#9397ab;max-width:420px">Set the road and conditions on the left, then press Predict Severity Risk. '
-            "The probability and a breakdown of each feature's contribution will appear here.</div></div>"
+            '<span style="border:1px dashed #595d6c;color:#9397ab;padding:4px 12px;border-radius:6px;font-size:12px;letter-spacing:.08em">NO ESTIMATE YET</span>'
+            f'<span style="font-size:14px;color:#9397ab">Alert threshold: {t:.1%}</span></div>'
+            + baseline_html
         )
 
-    # waterfall chart of one prediction's SHAP values (replaces shap.plots.waterfall)
+    # the placeholder panel that replaces the waterfall/factors before a prediction is made
+    EMPTY_EXPLANATION_PANEL_HTML = (
+        '<div style="border:1px dashed #3f424d;border-radius:8px;min-height:260px;padding:28px 32px;display:flex;flex-direction:column;justify-content:center;gap:8px">'
+        f'<div>{ICON_CHART_BAR}</div>'
+        '<div style="font-size:20px;font-weight:500;color:#cfd3e5">Why This Estimate?</div>'
+        '<div style="font-size:13px;color:#9397ab;max-width:420px">Set the road and conditions on the left, then press Predict Severity Risk. '
+        "The estimate and a breakdown of each factor's influence will appear here.</div></div>"
+    )
+
+    # ADDED FOR UX PASS: the Department for Transport's contributory-factors guidance covers a
+    # different part of STATS19 (CF/RSF variables) than this model uses (collision-table fields
+    # only) — linked here as useful background on police recording practice, not as a spec for
+    # this model's specific inputs
+    DFT_GUIDANCE_URL = (
+        "https://www.gov.uk/government/publications/guide-to-contributory-factors-for-reported-road-casualty-statistics/"
+        "guide-to-contributory-factors-for-reported-road-casualties-great-britain#strengths-and-limitations"
+    )
+    ABOUT_DATA_HTML = f"""
+<div style="font-size:13px;color:#cfd3e5;max-width:460px;line-height:1.5">
+<div style="font-weight:500;color:#e9e9ed;margin-bottom:2px">What the data represents</div>
+<div style="color:#9397ab;margin-bottom:12px">This model was trained on police-reported STATS19 collision
+records from Great Britain, 2020&ndash;2024. It describes patterns in recorded collisions and should not be
+interpreted as representing every collision that occurred.</div>
+<div style="font-weight:500;color:#e9e9ed;margin-bottom:2px">Recording effects</div>
+<div style="color:#9397ab;margin-bottom:12px">Most inputs describe recorded road, environmental and time
+conditions. But missing or "Information unavailable" values can also reflect how information was collected
+at the scene &mdash; these recording patterns may influence the model's estimate.</div>
+<div style="font-weight:500;color:#e9e9ed;margin-bottom:2px">How to interpret the result</div>
+<div style="color:#9397ab;margin-bottom:12px">The displayed percentage is a calibrated model estimate for
+collisions with similar recorded characteristics. It's intended for exploration and screening, not as a
+prediction of what will happen in an individual event.</div>
+<div style="font-weight:500;color:#e9e9ed;margin-bottom:2px">Association, not causation</div>
+<div style="color:#9397ab;margin-bottom:12px">The explanation shows which recorded features influenced the
+model. It does not prove that those conditions caused a serious or fatal outcome.</div>
+<div style="border-top:1px solid rgba(233,233,237,.16);padding-top:10px">
+<a href="{DFT_GUIDANCE_URL}" target="_blank" rel="noopener"
+   style="color:#9184d9;text-decoration:underline">Department for Transport data guidance &#8599;</a>
+<div style="color:#75798c;font-size:12px;margin-top:4px">This guidance focuses on contributory and road
+safety factors, which are not inputs to this model, but it provides useful context on police recording
+practices.</div>
+</div>
+</div>
+"""
+
+    # compact, always-visible provenance note + an "About the data" control that opens a
+    # popover (keyboard-operable: a regular button, Tab + Enter/Space opens it)
+    def render_data_context_row():
+        note_col, about_col = st.columns([0.74, 0.26])
+        with note_col:
+            st.markdown(
+                f'<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#75798c;'
+                f'margin-top:2px">{ICON_INFO}<span>Based on police-reported STATS19 collisions from '
+                'Great Britain, 2020&ndash;2024.</span></div>',
+                unsafe_allow_html=True,
+            )
+        with about_col:
+            with st.popover("About the data", use_container_width=True):
+                st.markdown(ABOUT_DATA_HTML, unsafe_allow_html=True)
+
+    # waterfall chart of one prediction's raw (per-column) SHAP values — unchanged from the
+    # original design; kept behind "Show detailed model explanation" per the UX pass
     def waterfall_fig(explanation, top_n=11):
         values = explanation.values
         base = float(explanation.base_values)
@@ -505,28 +820,84 @@ with tab_predict:
         fig.update_yaxes(tickvals=rows, ticktext=labels, ticksuffix="  ")
         return fig
 
+    # ADDED FOR UX PASS: plain-language rows for "Factors increasing/reducing this estimate",
+    # grouped by user-facing field (see grouped_factors) rather than raw one-hot columns
+    def factor_rows_html(rows):
+        if not rows:
+            return '<div style="font-size:13px;color:#75798c">No meaningful factors.</div>'
+        items = ""
+        for label, value in rows:
+            items += (
+                '<div style="display:flex;justify-content:space-between;gap:12px;font-size:13px;'
+                f'color:#cfd3e5;padding:5px 0">'
+                f'<span>{label}</span><span style="color:#9397ab;flex:none">{value:+.2f}</span></div>'
+            )
+        return items
+
+    dataset_prevalence = METRICS.get("dataset_prevalence")
+
     with right:
         result = st.session_state.get("result")
 
         if result is None:
-            st.markdown(empty_result_html(threshold), unsafe_allow_html=True)
+            st.markdown(empty_result_html(threshold, dataset_prevalence), unsafe_allow_html=True)
+            render_data_context_row()
+            st.markdown(FADING_RULE + EMPTY_EXPLANATION_PANEL_HTML, unsafe_allow_html=True)
         else:
+            is_stale = result.get("input_signature") != current_signature
+
+            if is_stale:
+                st.markdown(
+                    '<div style="display:flex;align-items:center;gap:6px;font-size:13px;color:#e3b341;'
+                    'background:rgba(227,179,65,.1);border:1px solid rgba(227,179,65,.3);border-radius:6px;'
+                    f'padding:8px 12px;margin-bottom:14px">{ICON_WARNING_SMALL}<span>Scenario changed since '
+                    'this estimate was produced — press Predict Severity Risk to refresh it.</span></div>',
+                    unsafe_allow_html=True,
+                )
+
             explanation = result["shap"]
             base = float(explanation.base_values)
             fx = base + explanation.values.sum()
 
-            st.markdown(result_html(result["probability"], threshold) + FADING_RULE, unsafe_allow_html=True)
-
-            # display the subheader for the chart
-            st.markdown("#### Why This Prediction?")
+            stale_wrap_open = '<div style="opacity:.55">' if is_stale else '<div>'
             st.markdown(
-                f'<div style="font-size:13px;color:#9397ab;margin-top:-8px">Feature contributions, log-odds, '
-                f'E[f(x)] = {round(base, 2) + 0.0:.2f} → f(x) = {round(fx, 2) + 0.0:.2f}</div>'.replace("= -", "= −"),
+                stale_wrap_open + result_html(result["probability"], threshold, dataset_prevalence) + "</div>",
+                unsafe_allow_html=True,
+            )
+            # compact data-context note sits beneath the result but before the explanation,
+            # per the UX pass — not inside the (possibly dimmed) stale wrapper, since it's a
+            # constant fact about the data rather than part of the prediction itself
+            render_data_context_row()
+            st.markdown(FADING_RULE, unsafe_allow_html=True)
+
+            # ---- plain-language factors (default view) ----
+            st.markdown("#### Why This Estimate?")
+            factors = grouped_factors(explanation)
+            increasing = [r for r in factors if r[1] > 0][:5]
+            reducing = [r for r in factors if r[1] < 0][:5]
+
+            fc1, fc2 = st.columns(2)
+            with fc1:
+                st.markdown('<div style="font-size:12px;color:#9397ab;margin-bottom:4px">FACTORS INCREASING THIS ESTIMATE</div>', unsafe_allow_html=True)
+                st.markdown(factor_rows_html(increasing), unsafe_allow_html=True)
+            with fc2:
+                st.markdown('<div style="font-size:12px;color:#9397ab;margin-bottom:4px">FACTORS REDUCING THIS ESTIMATE</div>', unsafe_allow_html=True)
+                st.markdown(factor_rows_html(reducing), unsafe_allow_html=True)
+
+            st.markdown(
+                '<div style="font-size:12px;color:#75798c;margin-top:10px;max-width:560px">These are model '
+                "influences, not proven causes. Missing or unknown values may reflect recording practices.</div>",
                 unsafe_allow_html=True,
             )
 
-            # display the SHAP waterfall chart
-            st.plotly_chart(waterfall_fig(explanation), use_container_width=True, config=CHART_CONFIG)
+            # ---- detailed/technical view (unchanged content, now behind a toggle) ----
+            with st.expander("Show detailed model explanation"):
+                st.markdown(
+                    f'<div style="font-size:13px;color:#9397ab;margin-top:-8px">Feature contributions, log-odds, '
+                    f'E[f(x)] = {round(base, 2) + 0.0:.2f} → f(x) = {round(fx, 2) + 0.0:.2f}</div>'.replace("= -", "= −"),
+                    unsafe_allow_html=True,
+                )
+                st.plotly_chart(waterfall_fig(explanation), use_container_width=True, config=CHART_CONFIG)
 
 # ------------------------------------------------
 # Stage 9: Dataset Overview
@@ -585,9 +956,13 @@ with tab_overview:
     st.header("About the Dataset")
     st.markdown(
         '<div style="font-size:14px;color:#cfd3e5;max-width:720px">'
-        "Source: UK DfT STATS19 road collision records, Great Britain, 2020–2024. "
+        "Source: UK DfT STATS19 police-reported road collisions, Great Britain, 2020–2024. "
         "Severity is collapsed to a binary target — Serious/Fatal vs Slight.</div>",
         unsafe_allow_html=True,
+    )
+    st.caption(
+        "These figures describe police-reported collisions. Differences in missing or unknown "
+        "values may partly reflect reporting practices."
     )
 
     # display key metrics about the dataset in three columns
@@ -735,6 +1110,16 @@ with tab_shap:
         "exPlanations) on the final class-weighted XGBoost model.</div>",
         unsafe_allow_html=True,
     )
+    # ADDED FOR UX PASS: kept visually secondary (plain expander, no icon/colour), collapsed by
+    # default — a reading aid, not a warning
+    with st.expander("How to read these charts"):
+        st.markdown(
+            '<div style="font-size:13px;color:#9397ab;max-width:640px">SHAP shows how features '
+            "influenced this model's output across the evaluation sample. It explains model "
+            "behaviour, not real-world causation. Strong effects for missing or unknown categories "
+            "may indicate patterns in data collection rather than genuine safety effects.</div>",
+            unsafe_allow_html=True,
+        )
 
     shap_sample = load_shap_sample()
     importance_col, direction_col = st.columns(2, gap="large")
