@@ -1,10 +1,10 @@
 [theme]
-base = "dark"
-primaryColor = "#9184d9"
-backgroundColor = "#161826"
-secondaryBackgroundColor = "#232532"
-textColor = "#e9e9ed"
-borderColor = "#3f424d"
+base = "light"
+primaryColor = "#3A55D0"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F7F8FA"
+textColor = "#16181D"
+borderColor = "#E1E5EA"
 baseRadius = "8px"
 font = "Inter, sans-serif"
-headingFontWeights = 500
+headingFontWeights = 600
